@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "pack": "node_modules/.bin/webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "preversion": "git checkout develop && git flow release start v$npm_package_version",
-    "version": "node_modules/.bin/webpack && git add dist && git commit -am \"bump v$npm_package_version\"",
+    "version": "npm run pack && /.bin/webpack && git add dist && git commit -am \"bump v$npm_package_version\"",
     "postversion": "git flow release finish -m \"v$npm_package_version\" v$npm_package_version"
   },
   "repository": {
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/saxix/trash#readme",
   "devDependencies": {
+    "dateformat": "^2.0.0",
     "string-replace-webpack-plugin": "^0.1.3",
     "webpack": "^2.5.1"
   }
