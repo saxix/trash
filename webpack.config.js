@@ -3,6 +3,11 @@ var webpack = require("webpack");
 var fs = require("fs");
 var StringReplacePlugin = require("string-replace-webpack-plugin");
 const rel = require("path").resolve.bind(null, __dirname);
+var dateFormat = require('dateformat');
+var now = new Date();
+
+const VERSION = require("./package.json").version;
+const INFOS = "@version 1\n@date 2".replace(/1/, VERSION).replace(/2/, dateFormat(now, "dddd, mmmm dS yyyy HH:MM:ss"));
 
 module.exports = {
     context: rel("src"),
@@ -19,13 +24,13 @@ module.exports = {
     module: {
         loaders: [
             {
-                test: /(client\.js|LICENSE)$/,
+                test: /(index\.js)$/,
                 loader: StringReplacePlugin.replace({
                     replacements: [
                         {
                             pattern: /%VERSION%/ig,
                             replacement: function (match, p1, offset, string) {
-                                return require("./package.json").version;
+                                return VERSION;
                             }
                         }
                     ]
@@ -35,12 +40,11 @@ module.exports = {
     },
     plugins: [
         new StringReplacePlugin(),
-
         new webpack.LoaderOptionsPlugin({
             minimize: true
         }),
         new webpack.DefinePlugin({
-            VERSION: JSON.stringify(require("./package.json").version)
+            VERSION: JSON.stringify(VERSION)
         }),
         new webpack.optimize.UglifyJsPlugin({
             include: /\.min\.js$/,
@@ -49,13 +53,12 @@ module.exports = {
             minimize: true
         }),
         new webpack.BannerPlugin({
-            banner: fs.readFileSync("./LICENSE", "utf8"),
+            banner: fs.readFileSync("./LICENSE", "utf8").replace(/^--$/mg, INFOS),
             raw: false, entryOnly: true
         })
     ],
     devtool: "hidden-source-map",
-    externals: {
-    },
+    externals: {},
     watch: false,
     watchOptions: {
         aggregateTimeout: 300,
