@@ -1,0 +1,22 @@
+{
+  "name": "trash",
+  "version": "1.0.4",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preversion": "git checkout develop && git flow release start v$npm_package_version",
+    "version": "git commit -am 'bump v$npm_package_version'",
+    "postversion": "git flow release finish v$npm_package_version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saxix/trash.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/saxix/trash/issues"
+  },
+  "homepage": "https://github.com/saxix/trash#readme"
+}
