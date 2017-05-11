@@ -1,13 +1,13 @@
 {
   "name": "trash",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "pack": "node_modules/.bin/webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "preversion": "git checkout develop && git flow release start v$npm_package_version",
-    "version": "npm run pack && /.bin/webpack && git add dist && git commit -am \"bump v$npm_package_version\"",
+    "version": "npm run pack && git add dist && git commit -am \"bump v$npm_package_version\"",
     "postversion": "git flow release finish -m \"v$npm_package_version\" v$npm_package_version"
   },
   "repository": {
