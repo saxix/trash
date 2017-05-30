@@ -7,7 +7,7 @@ var dateFormat = require('dateformat');
 var now = new Date();
 
 const VERSION = require("./package.json").version;
-const INFOS = "@version 1\n@date 2".replace(/1/, VERSION).replace(/2/, dateFormat(now, "dddd, mmmm dS yyyy HH:MM:ss"));
+const INFOS = "@version #1\n@date #2".replace(/#1/, VERSION).replace(/#2/, dateFormat(now, "dddd, mmmm dS yyyy HH:MM:ss"));
 
 module.exports = {
     context: rel("src"),
