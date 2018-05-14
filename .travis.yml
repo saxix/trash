@@ -1,0 +1,17 @@
+language: python
+python:
+- '3.6'
+env:
+    DJANGO = >=1.10,<1.11
+    DJANGO = >=1.11,<1.12
+    DJANGO = >=2.0,<2.1
+install:
+- pip install -r requirements.txt
+- pip install "django$DJANGO"
+script:
+- pytest
+deploy:
+  provider: pypi
+  user: saxix-deploy
+  password:
+    secure: GCzlvlN+3e7Y2i4AfF/SCxPHpqJDVXkqqfJ//zOXpCyIlFGjlAEq8NZA2n2ZNmMbAtNkNWNXvgG0FI0Qo+MT7vg/alvEvCdvje2eGr2daZzKalaXHCtul8SNIwwo3Yfl834I1Y1dEyzSr5irxLAWgNlL0CxD2p4eJgnScO5TKq8k7fEMd8N5ecaS5DzYWjcCcIgg2LtS7iClZKbpY9/qgz48ksAdP8vSVRZGhPjQd5EYwstngluvAQj3upCsQoUNbwUBWLWzGOTO+ahDy/h878hM+u07bGzC46XcxJ6SvTpS3Sz6aFhrHwfXWQwuZc/hM5i/O6TlsuE8s3vwO1tAq0/tnECuq0I9hYRKb7594RBDAfIcgeJL6s1Mz6K/uq/zCU6NWKPLfbIsa59abQdpYFeOdjh0f1I/mWHhcI7t+PqL6AvjgX7CAh5BxMFxu4+rkg3QXYZlOgvnMOttXQ7bu0NOIfUVvoMkqVa3wIWnKdVdGFceiXPozbMC6pdj+0UJTqWRfsDuTYiomYlEyQUdqw5BUTMkb3/9sMp0czVrx/pvFXp+bZNILWKj2+Mz04giyy5UF1RV0gVnZwplfbHmoCW3y+4hwy8jfeMMCQY/GncjuNu6hCNNzJD88ZRNBuWEgY5e3XcKKpdMqacIvrK4G1+kIhBvLwMGmgQER6cvO/M=
