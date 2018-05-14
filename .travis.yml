@@ -6,10 +6,9 @@ env:
     DJANGO = >=1.11,<1.12
     DJANGO = >=2.0,<2.1
 install:
-- pip install -r requirements.txt
-- pip install "django$DJANGO"
+  - pip install "django$DJANGO"
 script:
-- pytest
+  - pytest
 deploy:
   provider: pypi
   user: saxix-deploy
