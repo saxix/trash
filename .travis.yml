@@ -1,14 +1,22 @@
 language: python
+
 python:
-- '3.6'
+  - '3.6'
+
 env:
     DJANGO = >=1.10,<1.11
     DJANGO = >=1.11,<1.12
     DJANGO = >=2.0,<2.1
+
+
 install:
   - pip install "django$DJANGO"
+  - python setup.py sdist install
+
 script:
   - pytest
+
+
 deploy:
   provider: pypi
   user: saxix-deploy
