@@ -1,3 +1,4 @@
-saxix_trash.egg-info
-dist/*
-*/__pycache__
+*.egg-info
+dist/
+__pycache__
+.tox
