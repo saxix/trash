@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="saxix-trash",
-    version="0.1.0a0",
+    version="0.1.0",
     url='',
     author='',
     author_email='',
