@@ -1,1 +1,3 @@
 saxix_trash.egg-info
+dist/*
+*/__pycache__
