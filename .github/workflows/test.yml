@@ -37,4 +37,6 @@ jobs:
 
             - name: Test with tox
               run: |
-                  tox -e "d${{matrix.django-version//.}}-py39"
+                  tox -e "d${{ matrix.django-version }}-py39"
+
+
