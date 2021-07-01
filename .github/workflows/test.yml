@@ -1,0 +1,43 @@
+name: Python package
+
+on: [push, pull_request]
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-python@v2
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip tox
+            - name: Lint with flake8
+              run: |
+                  tox -e lint
+
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: [3.9]
+                django-version: [30, 31, 32]
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v2
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip tox
+            - name: Lint with flake8
+              run: |
+                  tox -e lint
+
+            - name: Test with tox
+              run: |
+                  tox -e "d${{matrix.django-version//.}}-py39"
