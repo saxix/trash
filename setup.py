@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
+TEST = ['pytest', 'isort', 'flake8']
+DEV = TEST + ['check-manifest', 'twine', 'build']
+
 setup(
     name="saxix-trash",
     version="0.1.0",
@@ -14,9 +17,10 @@ setup(
     # package_dir={'': 'src'},
     # packages=find_packages(where=ROOT),
     include_package_data=True,
-    tests_require = ['pytest',],
-    extras_require = {
-        'test': ['pytest'],
+    tests_require=['pytest', ],
+    extras_require={
+        'dev': DEV,
+        'test': TEST
     },
     platforms=['linux'],
     classifiers=[

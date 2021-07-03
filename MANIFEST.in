@@ -1,0 +1,7 @@
+exclude .bumpversion.cfg
+include CHANGES
+include CONTRIBUTING
+exclude Makefile
+exclude tox.ini
+recursive-include src *.py
+recursive-include tests *.py
