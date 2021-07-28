@@ -10,6 +10,8 @@ python = "*"
 [tool.poetry.dev-dependencies]
 tox = "*"
 django="*"
+pytest="*"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
