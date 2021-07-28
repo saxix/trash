@@ -1,6 +1,13 @@
 name: PyTest
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - develop
+
 #    types: [assigned, opened, synchronize, reopened]
 
 jobs:
