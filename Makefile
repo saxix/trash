@@ -5,4 +5,5 @@ release:
 	bumpversion minor --commit
 	git flow release publish
 	git checkout develop
+	git prune-merged-branches -fur origin develop
 
