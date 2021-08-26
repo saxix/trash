@@ -4,7 +4,7 @@ on: push
 
 jobs:
   test:
-    #    if: github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,25 +21,14 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
 
-  #    - name: Install dependencies
-  #      run: python -m pip install --upgrade pip tox
-  #
-  #    - name: Test with tox
-  #      run: tox -e d${DJANGO_VERSION//.}-py${PYTHON_VERSION//.}
-  #  echo:
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - name: Set tag version
-  #        run: echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
-  #
-  #      - name: git
-  #        run: |
-  #          git --version
-  #          echo $TAG_VERSION
-  #          env | sort
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip tox
+
+      - name: Test with tox
+        run: tox -e d${DJANGO_VERSION//.}-py${PYTHON_VERSION//.}
+
 
   release:
-    #    if: github.event_name == 'pull_request' && startsWith(github.ref, 'refs/heads/release/')
     if: startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     needs: test
@@ -49,21 +38,21 @@ jobs:
           echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
           echo BRANCH_NAME=${GITHUB_REF#*/*/} >> $GITHUB_ENV
 
-#      - name: Merge to master
-#        uses: devmasx/merge-branch@v1.3.1
-#        with:
-#          type: now
-#          from_branch: ${{ env.BRANCH_NAME }}
-#          target_branch: master
-#          github_token: ${{ github.token }}
-#
-#      - name: Merge to develop
-#        uses: devmasx/merge-branch@v1.3.1
-#        with:
-#          type: now
-#          from_branch: ${{ env.BRANCH_NAME }}
-#          target_branch: develop
-#          github_token: ${{ github.token }}
+      - name: Merge to master
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: ${{ env.BRANCH_NAME }}
+          target_branch: master
+          github_token: ${{ github.token }}
+
+      - name: Merge to develop
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: ${{ env.BRANCH_NAME }}
+          target_branch: develop
+          github_token: ${{ github.token }}
 
       - name: Checkuot
         uses: actions/checkout@v2
@@ -76,9 +65,9 @@ jobs:
           tag: "${{ env.TAG_VERSION }}"
           message: "v${{ env.TAG_VERSION }}"
           commit_sha: "${{ github.sha }}"
-        env:
-          INPUT_TAG: "${{ env.TAG_VERSION }}"
-          INPUT_COMMIT_SHA: "${{ github.sha }}"
+#        env:
+#          INPUT_TAG: "${{ env.TAG_VERSION }}"
+#          INPUT_COMMIT_SHA: "${{ github.sha }}"
 
       - name: Delete merged branches
         uses: koj-co/delete-merged-action@master
@@ -87,16 +76,3 @@ jobs:
 #          branches: "!master, !develop, *"
         env:
           GITHUB_TOKEN: "${{ github.token }}"
-#
-#      - name: git
-#        run: |
-#          git --version
-#          env | sort
-#          echo "Slug variables"
-#          echo " - ${{ github.ref }}"
-#          git config user.name "GitHub Actions Bot"
-#          git config user.email "<>"
-#          git checkout master
-#          git tag -a ${{ env.TAG_VERSION }}
-#          git branch -d ${{ github.ref }}"
-#
