@@ -8,3 +8,6 @@ release:
 	git flow release publish
 	git checkout develop && git prune-merged-branches -fur origin develop
 
+clean:
+	git remote prune origin
+	git branch --merged | xargs git branch -d
