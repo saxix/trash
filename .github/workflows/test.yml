@@ -65,9 +65,6 @@ jobs:
           tag: "${{ env.TAG_VERSION }}"
           message: "v${{ env.TAG_VERSION }}"
           commit_sha: "${{ github.sha }}"
-#        env:
-#          INPUT_TAG: "${{ env.TAG_VERSION }}"
-#          INPUT_COMMIT_SHA: "${{ github.sha }}"
 
       - name: Delete merged branches
         uses: koj-co/delete-merged-action@master
@@ -76,3 +73,7 @@ jobs:
 #          branches: "!master, !develop, *"
         env:
           GITHUB_TOKEN: "${{ github.token }}"
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+#        if: startsWith(github.ref, 'refs/tags/')
