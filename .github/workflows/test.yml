@@ -1,31 +1,79 @@
-name: PyTest
+name: CI
 
-on: [pull_request]
-#    types: [assigned, opened, synchronize, reopened]
+on: push
 
 jobs:
-  build:
+  test:
+#    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    env:
-      PYTHON_VERSION: ${{ matrix.python-version }}
-      DJANGO_VERSION: ${{ matrix.django-version }}
-
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        python-version: [3.8, 3.9]
-        django-version: [3.1, 3.2]
+        python-version: [ 3.8 ]
+        django-version: [ 3.1 ]
+    env:
+      DJANGO_VERSION: ${{ matrix.django-version }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+
+#    - name: Install dependencies
+#      run: python -m pip install --upgrade pip tox
+#
+#    - name: Test with tox
+#      run: tox -e d${DJANGO_VERSION//.}-py${PYTHON_VERSION//.}
+#  echo:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Set tag version
+#        run: echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+#
+#      - name: git
+#        run: |
+#          git --version
+#          echo $TAG_VERSION
+#          env | sort
+
+  release:
+#    if: github.event_name == 'pull_request' && startsWith(github.ref, 'refs/heads/release/')
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Set tag version
+        run: |
+          echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+          echo BRANCH_NAME=${GITHUB_REF#*/*/} >> $GITHUB_ENV
+
+      - name: Merge to master
+        uses: devmasx/merge-branch@v1.3.1
         with:
-          python-version: ${{ matrix.python-version }}
+          type: now
+          from_branch: ${{ env.BRANCH_NAME }}
+          target_branch: master
+          github_token: ${{ github.token }}
 
-      - name: Install dependencies
-        run: python -m pip install --upgrade tox
+      - name: Merge to develop
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: ${{ env.BRANCH_NAME }}
+          target_branch: develop
+          github_token: ${{ github.token }}
 
-      - name: Test with tox
-        run: tox -e "py${PYTHON_VERSION//.}-d${DJANGO_VERSION//.}"
+      - name: git
+        run: |
+          git --version
+          env | sort
+          echo "Slug variables"
+          echo " - ${{ github.ref }}"
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git checkout master
+          git tag -a ${{ env.TAG_VERSION }}
+          git branch -d ${{ github.ref }}"
+
