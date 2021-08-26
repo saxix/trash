@@ -73,8 +73,10 @@ jobs:
           token: ${{ github.token }}
 
       - name: Delete merged branches
-        uses: zjutszl/delete-merged-branch-asdf@master
-
+        uses: koj-co/delete-merged-action@master
+        with:
+          branches: "release/*"
+#          branches: "!master, !develop, *"
 
 #
 #      - name: git
