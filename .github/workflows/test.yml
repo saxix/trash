@@ -71,7 +71,10 @@ jobs:
           tag: "${{ env.TAG_VERSION }}"
           message: v${{ env.TAG_VERSION }}
 
-      - name: Delete merged branches
+      - name: Delete merged branches 1/2
+        uses: actions/checkout@v2
+
+      - name: Delete merged branches 2/2
         uses: koj-co/delete-merged-action@master
         with:
           branches: "release/*"
