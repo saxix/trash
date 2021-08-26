@@ -26,30 +26,34 @@ jobs:
 #
 #    - name: Test with tox
 #      run: tox -e d${DJANGO_VERSION//.}-py${PYTHON_VERSION//.}
-  echo:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set tag version
-        run: echo TAG_VERSION=${GITHUB_REF#*\/} >> $GITHUB_ENV
-
-      - name: git
-        run: |
-          git --version
-          env
+#  echo:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Set tag version
+#        run: echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+#
+#      - name: git
+#        run: |
+#          git --version
+#          echo $TAG_VERSION
+#          env | sort
 
   release:
 #    if: github.event_name == 'pull_request' && startsWith(github.ref, 'refs/heads/release/')
-    if: startsWith(github.ref, 'refs/heads/releaseww/')
+    if: startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Set tag version
-        run: echo TAG_VERSION=${GITHUB_REF#*\/} >> $GITHUB_ENV
+        run: |
+          echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+          echo BRANCH_NAME=${GITHUB_REF#*/*/} >> $GITHUB_ENV
 
       - name: Merge to master
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
+          from_branch: ${{ env.BRANCH_NAME }}
           target_branch: master
           github_token: ${{ github.token }}
 
@@ -57,19 +61,19 @@ jobs:
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
+          from_branch: ${{ env.BRANCH_NAME }}
           target_branch: develop
           github_token: ${{ github.token }}
 
       - name: git
         run: |
           git --version
-          env
-#          echo "Slug variables"
-#          echo " - ${{ github.ref }}"
-#          git config user.name "GitHub Actions Bot"
-#          git config user.email "<>"
-#          echo
-#          git branch -d ${{ github.ref }}"
-#          git checkout master
-#          git tag -a 1.2.0
+          env | sort
+          echo "Slug variables"
+          echo " - ${{ github.ref }}"
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git checkout master
+          git tag -a ${{ env.TAG_VERSION }}
+          git branch -d ${{ github.ref }}"
 
