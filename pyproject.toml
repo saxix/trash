@@ -1,7 +1,9 @@
 [tool.poetry]
 name = "trash"
 version = "0.1.0"
-description = ""
+description = "description"
+long_description = "long description"
+long_description_content_type = "text/x-rst"
 authors = ["sax <s.apostolico@gmail.com>"]
 
 [tool.poetry.dependencies]
