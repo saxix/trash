@@ -66,11 +66,10 @@ jobs:
           github_token: ${{ github.token }}
 
       - name: Create Tag
-        uses: negz/create-tag@v1
+        uses: rickstaa/action-create-tag@v1
         with:
-          version: ${{ env.TAG_VERSION }}
+          tag: "${{ env.TAG_VERSION }}"
           message: v${{ env.TAG_VERSION }}
-          token: ${{ github.token }}
 
       - name: Delete merged branches
         uses: koj-co/delete-merged-action@master
