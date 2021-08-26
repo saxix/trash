@@ -65,15 +65,19 @@ jobs:
           target_branch: develop
           github_token: ${{ github.token }}
 
-      - name: Delete merged branches 1/2
+      - name: Checkuot
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Create Tag
         uses: rickstaa/action-create-tag@v1
         with:
-          tag: "${{ env.TAG_VERSION }}"
+          reference: "master"
+          tag: ${{ env.TAG_VERSION }}
           message: v${{ env.TAG_VERSION }}
-      - name: Delete merged branches 2/2
+
+      - name: Delete merged branches
         uses: koj-co/delete-merged-action@master
         with:
           branches: "release/*"
