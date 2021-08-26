@@ -73,7 +73,6 @@ jobs:
       - name: Create Tag
         uses: rickstaa/action-create-tag@v1
         with:
-          reference: "master"
           tag: ${{ env.TAG_VERSION }}
           message: v${{ env.TAG_VERSION }}
 
