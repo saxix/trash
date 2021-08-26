@@ -10,4 +10,4 @@ release:
 
 clean:
 	git remote prune origin
-	git branch --merged | xargs git branch -d
+# 	git branch --merged | xargs git branch -d
