@@ -7,7 +7,6 @@ sync:
 	@git checkout develop && git pull && git push
 	@git fetch --all --prune -v
 	@git branch -vv | grep 'origin/release/.*: gone]' | awk '{print $1}' | xargs git branch -D
-# 	@git branch -vv
 	@git st
 
 release: sync
