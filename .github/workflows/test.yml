@@ -56,7 +56,7 @@ jobs:
           pr_title: "Release ${{ env.TAG_VERSION }}"
           pr_label: "auto-pr"
           pr_draft: false
-          
+
 
       - name: Check outputs
         run: |
