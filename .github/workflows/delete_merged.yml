@@ -1,4 +1,4 @@
-name: Delete merged releases
+name: On close PR
 on:
   pull_request:
     types:
@@ -7,7 +7,18 @@ on:
 #      - edited
 #      - reopened
 jobs:
-  automerge:
+  create_tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ncipollo/release-action@v1
+        with:
+          token: ${{github.token}}
+
+  delete_merged_release_branche:
+#    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
