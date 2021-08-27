@@ -11,6 +11,17 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - name: Set tag version
+        run: |
+          echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+
+      - name: Create Tag
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ github.event.inputs.version }}
+          message: "Release"
+          token: ${{ github.token }}
+
       - uses: Logerfo/gitflow-action@0.0.4
         with:
           github-token: ${{ github.token }} # The `GITHUB_TOKEN` secret.

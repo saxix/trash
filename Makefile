@@ -1,4 +1,4 @@
-NEXT_VERSION := $(shell bumpversion --allow-dirty --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
+NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
 clean:
 	@git fetch --all --prune -v
