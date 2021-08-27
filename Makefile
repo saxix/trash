@@ -1,10 +1,8 @@
 NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
-pull:
-	@git checkout master && git pull
-	@git checkout develop && git pull
-	@git push --all
-	@git fetch --all
+sync:
+	@git checkout master && git pull && git push
+	@git checkout develop && git pull && git push
 	@git branch
 	@git st
 
