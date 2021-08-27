@@ -16,6 +16,4 @@ jobs:
         uses: dawidd6/action-delete-branch@v3
         with:
           github_token: ${{github.token}}
-          branches: 13,22,33
-          prefix: "release/"
           numbers: ${{github.event.pull_request.number}}
