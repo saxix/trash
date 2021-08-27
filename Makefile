@@ -5,7 +5,7 @@ sync:
 	@git checkout develop && git pull && git push
 	@git fetch --all --prune -v
 	@git branch -vv | grep 'origin/.*: gone]' | awk '{print $1}' | xargs git branch -d
-	@git branch -vv
+# 	@git branch -vv
 	@git st
 
 release: pull
