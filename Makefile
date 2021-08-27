@@ -10,7 +10,7 @@ sync:
 # 	@git branch -vv
 	@git st
 
-release: pull
+release: sync
 	git checkout master && git pull
 	git checkout develop && git pull
 	git flow release start ${NEXT_VERSION}
