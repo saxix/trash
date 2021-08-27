@@ -4,6 +4,7 @@ pull:
 	@git checkout master && git pull
 	@git checkout develop && git pull
 	@git push --all
+	@git fetch --all
 	@git st
 
 release: pull
