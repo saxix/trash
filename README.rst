@@ -2,9 +2,7 @@ This repo is only used for "test and waste" code like CI workflows, Travis/Circl
 
 
 
-Compatibility Matrix
---------------------
+Status
+------
 
-.. image:: https://travis-matrix-badges.herokuapp.com/repos/saxix/trash/branches/develop
-
-
+.. image:: https://github.com/saxix/trash/actions/workflows/test.yml/badge.svg?branch=develop&event=push)](https://github.com/saxix/trash/actions/workflows/test.yml
