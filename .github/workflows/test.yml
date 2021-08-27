@@ -53,6 +53,10 @@ jobs:
         with:
           destination_branch: "master"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Release ${{ env.TAG_VERSION }}"
+          pr_label: "auto-pr"
+          pr_draft: false
+          
 
       - name: Check outputs
         run: |
