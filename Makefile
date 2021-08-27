@@ -2,7 +2,8 @@ NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version'
 
 release:
 	git push --all
-	git checkout develop
+	git checkout master && git pull
+	git checkout develo && git pull
 	git flow release start ${NEXT_VERSION}
 	bumpversion minor --commit
 	git flow release publish
