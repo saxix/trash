@@ -3,7 +3,7 @@ NEXT_VERSION := $(shell bumpversion --allow-dirty --dry-run --list minor | grep 
 clean:
 	@git fetch --all --prune -v
 	@git remote prune origin
-	@git branch -vv | grep 'origin/release/.*: gone]' | awk '{print $1}' | xargs git branch -d
+	git branch -vv | grep "origin/release/.*: gone]" | awk '{print $1}' | xargs git branch -d
 	@git branch -vv
 
 sync: clean
