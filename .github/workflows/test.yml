@@ -25,7 +25,7 @@ jobs:
         run: python -m pip install --upgrade pip tox
 
       - name: Test with tox
-        run: tox -e d${DJANGO_VERSION//.}-py${PYTHON_VERSION//.}
+        run: tox -e py${PYTHON_VERSION//.}-d${DJANGO_VERSION//.}
 
 
   release:
@@ -77,3 +77,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
 #        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: false
+          name: "v${{ env.TAG_VERSION }}"
+          tag_name: "${{ env.TAG_VERSION }}"
