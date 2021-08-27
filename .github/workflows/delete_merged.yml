@@ -1,4 +1,4 @@
-name: Merge PRs
+name: Delete merged branches
 on:
   pull_request:
     types:
@@ -13,4 +13,4 @@ jobs:
       - name: Delete merged branch
         uses: koj-co/delete-merged-action@master
         with:
-          branches: "!master, !develop, *"
+          branches: "!master, !develop, release/*"
