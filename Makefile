@@ -4,7 +4,6 @@ clean:
 	@echo "Clean"
 	@git fetch --all --prune -v
 	@git remote prune origin
-	@git branch -vv | grep "origin/release/.*: gone]" | awk '{print $1}' | xargs git branch -D
 	@git branch -vv
 
 sync: clean
@@ -14,6 +13,7 @@ sync: clean
 	@git checkout master && git pull && git push
 	@git checkout develop && git pull && git push
 	@git st
+	@git branch -vv | grep "origin/release/.*: gone]" | awk '{print $1}' | xargs git branch -D
 
 release: sync
 	git checkout master && git pull
