@@ -1,4 +1,4 @@
-NEXT_VERSION := $(shell git diff --exit-code && bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
+NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
 sync:
 	@git diff --cached --exit-code
