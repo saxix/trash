@@ -45,46 +45,16 @@ jobs:
           echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
           echo BRANCH_NAME=${GITHUB_REF#*/*/} >> $GITHUB_ENV
 
-      - name: Merge to master
-        uses: devmasx/merge-branch@v1.3.1
-        with:
-          type: now
-          from_branch: ${{ env.BRANCH_NAME }}
-          target_branch: master
-          github_token: ${{ github.token }}
+      - uses: actions/checkout@v2
 
-      - name: Merge to develop
-        uses: devmasx/merge-branch@v1.3.1
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
         with:
-          type: now
-          from_branch: ${{ env.BRANCH_NAME }}
-          target_branch: develop
-          github_token: ${{ github.token }}
+          destination_branch: "master"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkuot
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      - name: Create Tag
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "${{ env.TAG_VERSION }}"
-          message: "v${{ env.TAG_VERSION }}"
-          commit_sha: "${{ github.sha }}"
-
-      - name: Delete merged branches
-        uses: koj-co/delete-merged-action@master
-        with:
-          branches: "release/*"
-#          branches: "!master, !develop, *"
-        env:
-          GITHUB_TOKEN: "${{ github.token }}"
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-#        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          prerelease: false
-          name: "v${{ env.TAG_VERSION }}"
-          tag_name: "${{ env.TAG_VERSION }}"
+      - name: Check outputs
+        run: |
+            echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+            echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
