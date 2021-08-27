@@ -1,8 +1,8 @@
-NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
+NEXT_VERSION := $(shell bumpversion --allow-dirty --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
 clean:
 	@git fetch --all --prune -v
-	@git branch -vv | grep 'origin/release/.*: gone]' | awk '{print $1}' | xargs git branch -d
+# 	@git branch -vv | grep 'origin/release/.*: gone]' | awk '{print $1}' | xargs git branch -d
 	@git remote prune origin
 
 sync: clean
