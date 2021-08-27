@@ -18,4 +18,5 @@ release: sync
 	git flow release start ${NEXT_VERSION}
 	bumpversion minor --commit
 	git flow release publish
+	git checkout develop
 
