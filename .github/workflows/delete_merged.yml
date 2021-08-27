@@ -10,7 +10,11 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
+#      - uses: actions/checkout@v2
+
       - name: Delete merged branch
         uses: koj-co/delete-merged-action@master
         with:
           branches: "!master, !develop, release/*"
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
