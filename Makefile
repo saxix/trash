@@ -15,7 +15,6 @@ release: sync
 	git flow release start ${NEXT_VERSION}
 	bumpversion minor --commit
 	git flow release publish
-	git checkout develop && git prune-merged-branches -fur origin develop
 
 clean:
 	git remote prune origin
