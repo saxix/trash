@@ -13,13 +13,13 @@ jobs:
     steps:
       - name: Set tag version
         run: |
-          echo TAG_VERSION=${GITHUB_REF##*\/} >> $GITHUB_ENV
+          echo TAG_VERSION=${GITHUB_HEAD_REF##*\/} >> $GITHUB_ENV
 
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
-          version: ${{ github.event.inputs.version }}
-          message: "Release"
+          version: ${{ env.TAG_VERSION }}
+          message: "Release ${{env.TAG_VERSION}}"
           token: ${{ github.token }}
 
       - uses: Logerfo/gitflow-action@0.0.4
