@@ -1,8 +1,8 @@
 NEXT_VERSION := $(shell git diff --exit-code && bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
 sync:
-	git diff --cached --exit-code
-	git diff --exit-code
+	@git diff --cached --exit-code > /dev/null && echo "ERROR: Pending commit"
+	@git diff --exit-code > /dev/null && echo "1111"
 	@git checkout master && git pull && git push
 	@git checkout develop && git pull && git push
 	@git fetch --all --prune -v
