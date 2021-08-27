@@ -3,8 +3,9 @@ NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version'
 sync:
 	@git checkout master && git pull && git push
 	@git checkout develop && git pull && git push
-	@git remote prune origin
-	@git branch
+	@git fetch --all --prune -v
+# 	@git remote prune origin
+	@git branch -vv
 	@git st
 
 release: pull
