@@ -54,7 +54,6 @@ jobs:
           destination_branch: "master"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-
       - name: Check outputs
         run: |
             echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
