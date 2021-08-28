@@ -13,7 +13,7 @@ sync: clean
 	@git checkout master && git pull && git push
 	@git checkout develop && git pull && git push
 	@git st
-	@git branch -vv | grep "origin/release/.*: gone]" | awk '{print $1}' | xargs git branch -D
+# 	@git branch -vv | grep "origin/release/.*: gone]" | awk '{print $1}' | xargs git branch -D
 
 release: sync
 	git checkout master && git pull
