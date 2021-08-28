@@ -30,6 +30,13 @@ jobs:
 #          auto-merge: pull_request_review # If `true`, will try to automatically merge pull requests. Can also be set to `pull_request_review`, `check_run`, `push`, or a comma-separated combination of these values to only merge when handling the named events.
           require-merge: true # If an attempted merge fails, the action is considered to have failed.
 
+      - name: Merge to develop
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: master
+          target_branch: develop
+          github_token: ${{ github.token }}
 
   delete_merged_release_branche:
 #    if: github.event.pull_request.merged == true

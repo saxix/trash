@@ -1,4 +1,4 @@
-NEXT_VERSION := $(shell bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
+NEXT_VERSION := $(shell bumpversion --allow-dirty --dry-run --list minor | grep '^new_version' | sed 's/.*=//')
 
 clean:
 	@echo "Clean"
@@ -18,7 +18,7 @@ sync: clean
 release: sync
 	git checkout master && git pull
 	git checkout develop && git pull
-	git flow release start ${NEXT_VERSION}
+	NEXT_VERSION=`bumpversion --dry-run --list minor | grep '^new_version' | sed 's/.*=//'` git flow release start ${NEXT_VERSION}
 	bumpversion minor --commit
 	git flow release publish
 	git checkout develop
