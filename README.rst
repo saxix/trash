@@ -1,5 +1,9 @@
-This repo is only used for "test and waste" code like CI workflows, Travis/Circle features.
+This repo is only used to test and waste, my personal lab for
 
+- packaging
+- CI workflows
+- GitHub actions
+- ...
 
 
 Status
