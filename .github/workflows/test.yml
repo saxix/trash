@@ -145,7 +145,7 @@ jobs:
       needs: [build, lint, security]
       runs-on: ubuntu-20.04
       container:
-        image: ${{ steps.image_name.outputs.latest }}
+        image: saxix/trash:dev-latest
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
