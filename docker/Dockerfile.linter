@@ -1,0 +1,4 @@
+ARG PYTHON_VER=3.12
+ARG PKG_DIR=/code/__pypackages__/${PYTHON_VER}
+
+FROM python:$PYTHON_VER-slim-bullseye AS python_base
