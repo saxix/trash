@@ -1,19 +1,31 @@
-[tool.poetry]
+[project]
+name = "trash"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "sax", email = "s.apostolico@gmail.com"},
+]
+dependencies = []
+requires-python = ">3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
 name = "trash"
 version = "0.32.0"
 description = "description"
-readme = "README.rst"
+readme = "README.md"
 authors = ["sax <s.apostolico@gmail.com>"]
+distribution = false
 
+[tool.pdm.dev-dependencies]
+dev = [
+    "tox",
+    "pytest>=8.2.1",
+    "pytest-coverage>=0.0",
+]
+
+[tool.pdm.build]
+includes = []
 [tool.poetry.dependencies]
 python = "*"
-
-[tool.poetry.dev-dependencies]
-tox = "*"
-django="*"
-pytest="*"
-
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
