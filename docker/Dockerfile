@@ -65,10 +65,10 @@ RUN \
 
 RUN ln -s -f /bin/true /usr/bin/chfn \
     && groupadd --gid 1024 app \
-    && adduser --disabled-login --disabled-password --no-create-home --ingroup app -q user
-#    && mkdir ${DEST_DIR} \
-#    && chown app:user ${DEST_DIR} \
-#    && echo $CHECKSUM > /CHECKSUM
+    && adduser --disabled-login --disabled-password --no-create-home --ingroup app -q user \
+    && echo $CHECKSUM > /CHECKSUM \
+    && echo $VERSION > /VERSION
+
 
 COPY docker/bin/* /usr/local/bin/
 COPY docker/conf/* /conf/
