@@ -133,7 +133,7 @@ jobs:
       runs-on: ubuntu-20.04
       needs: [build, lint]
       container:
-        image: ${{ steps.image_name.outputs.latest }}
+        image: saxix/trash:dev-latest
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
