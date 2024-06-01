@@ -6,7 +6,7 @@ on:
       - closed
 
 jobs:
-  one:
+  dump:
     if: ${{ contains(github.event.head_commit.message, 'ci:debug') }}
     runs-on: ubuntu-latest
     steps:

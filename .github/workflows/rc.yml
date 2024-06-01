@@ -1,0 +1,17 @@
+name: release
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          ls -al
+#          version=$(git describe --tags --dirty --always | sed -e 's/^v//')
+#          echo "Build release $version"

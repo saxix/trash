@@ -1,4 +1,5 @@
 #!/bin/bash
+CHECKSUM=$(cat /CHECKSUM)
+VERSION=$(cat /VERSION)
 
-echo "CHECKSUM ${CHECKSUM}"
-echo "uwsgi   " `uwsgi --version`
+echo "{\"checksum\": \"${CHECKSUM}\", \"version\": \"${VERSION}\"}"

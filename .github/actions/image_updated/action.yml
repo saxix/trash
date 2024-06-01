@@ -1,0 +1,57 @@
+# ref: https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action
+name: 'Check if image with valid checksum exists in dockerhub'
+description: ''
+inputs:
+  image:
+    description: 'Docker Image '
+    required: true
+  checksum:
+    description: 'checksum'
+    required: true
+  label:
+    description: 'checksum label'
+    default: 'checksum'
+    required: false
+  username:
+    description: 'DockerHub username '
+    required: false
+  password:
+    description: 'DockerHub password '
+    required: false
+
+outputs:
+  exists:
+    description: 'The time we greeted you'
+    value: ${{ steps.check.outputs.exixts }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Image Updatd
+      continue-on-error: true
+      shell: bash --noprofile --norc -eo pipefail -ux {0}
+#        docker manifest inspect --format='{{json .Config.Labels}}' ${{inputs.image}}
+      run: |
+        set +e
+        ref=${{ inputs.image }}
+        repo="${ref%:*}"
+        tag="${ref##*:}"
+        if [ -n "${{ inputs.username }}" ];  then
+          token=$(curl -u "${{ inputs.username }}:${{ inputs.password }}" -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull"       | jq -r '.token')
+        else
+          token=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull" | jq -r '.token')
+          fi
+          digest=$(curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                        -H "Authorization: Bearer $token" \
+                        -s "https://registry-1.docker.io/v2/${repo}/manifests/${tag}" | jq -r .config.digest)
+          
+          checksum=$(curl -H "Accept: application/vnd.docker.container.image.v1+json" \
+               -H "Authorization: Bearer $token" \
+               -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}" | jq --raw-output '.config.Labels.${{ inputs.label }}' )
+        if [ $checksum = '"${{ inputs.checksum }}"' ];then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "Image ${{inputs.image}} found"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "Image ${{inputs.image}} does not exist"
+        fi

@@ -1,4 +1,5 @@
-VERSION = __version__ = '0.32.0'
+VERSION = __version__ = "0.32.0"
 
 
-# Note 1
+def echo(*args, **kwargs):
+    print("done")

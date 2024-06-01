@@ -1,0 +1,5 @@
+# This is used by the action https://github.com/dorny/paths-filter
+docker_base:
+  - added|modified: '.docker/**'
+  - 'pdm.toml'
+  - 'pyproject.toml'

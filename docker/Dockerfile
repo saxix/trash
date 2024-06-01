@@ -17,6 +17,10 @@ ARG VERSION
 ENV VERSION=$VERSION
 ARG BUILD_DATE
 ENV BUILD_DATE=$BUILD_DATE
+ARG APATH
+ENV APATH=$APATH
+ARG APYTHONPATH
+ENV APYTHONPATH=$APYTHONPATH
 
 ARG GOSU_VERSION=1.17
 ARG GOSU_SHA256=bbc4136d03ab138b1ad66fa4fc051bafc6cc7ffae632b069a53657279a450de3
@@ -89,11 +93,13 @@ ARG VERSION
 ARG BUILD_DATE
 ARG APATH
 ARG APYTHONPATH
+
 LABEL date=$BUILD_DATE
 LABEL version=$VERSION
 LABEL checksum=$CHECKSUM
 ENV PATH=${APATH}:${PATH} \
-    PYTHONPATH=${APYTHONPATH} \
+    PYTHONPATH=${APYTHONPATH}:/code/app/src \
+    PYTHONDONTWRITEBYTCODE=1\
     PDM_CHECK_UPDATE=0 \
     PDM_CACHE_DIR=/cache/ \
     PDM_USE_VENV=0 \
@@ -112,6 +118,7 @@ COPY pdm.lock .
 COPY ./src /code/src
 ENV PATH=${APATH}:${PATH} \
     PYTHONPATH=${APYTHONPATH} \
+    PYTHONDONTWRITEBYTCODE=1 \
     PDM_CHECK_UPDATE=0 \
     PDM_CACHE_DIR=/cache/ \
     PDM_USE_VENV=0 \
@@ -129,6 +136,14 @@ RUN pip install -U pip setuptools pdm \
 
 
 FROM python_base AS dist
+LABEL maintainer="mnt@app.io"
+LABEL org.opencontainers.image.title="App"
+LABEL org.opencontainers.image.description="App runtime image"
+LABEL org.opencontainers.image.url="https://app.io/"
+LABEL org.opencontainers.image.documentation="https://github.com/saxix/trash"
+LABEL org.opencontainers.image.vendor="App ltd"
+LABEL org.opencontainers.image.authors="author@app.io"
+
 ARG PKG_DIR
 ARG CHECKSUM
 ARG VERSION
@@ -144,3 +159,6 @@ CMD "run"
 ENTRYPOINT exec docker-entrypoint.sh "$0" "$@"
 
 
+LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
+LABEL org.opencontainers.image.source="${{env.GITHUB_SERVER_URL}}/${{env.GITHUB_REPOSITORY}}/tree/${SOURCE_COMMIT:-master}/"
+LABEL org.opencontainers.image.licenses="${{env.GITHUB_SERVER_URL}}/${{env.GITHUB_REPOSITORY}}/blob/${SOURCE_COMMIT:-master}/LICENSE"
