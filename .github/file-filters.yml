@@ -10,6 +10,6 @@ run_tests:
   - 'pytest.ini'
 
 python:
-  - added|modified: 'src/**/*.py'
-  - added|modified: 'tests/**/*.py'
+  - added|modified: 'src/**'
+  - added|modified: 'tests/**'
   - 'manage.py'

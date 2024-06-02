@@ -24,25 +24,50 @@ runs:
       shell: bash --noprofile --norc -eo pipefail -ux {0}
       id: parser
       run: |
+        BASE=$(git describe --all --exact-match 2>/dev/null | sed 's=.*/==')
+        VERSION="${BASE#[vV]}"
+        VERSION_MAJOR="${VERSION%%.*}"
+        VERSION_MINOR_PATCH="${VERSION#*.}"
+        VERSION_MINOR="${VERSION_MINOR_PATCH%%.*}"
+        VERSION_PATCH_PRE_RELEASE="${VERSION_MINOR_PATCH#*.}"
+        VERSION_PATCH="${VERSION_PATCH_PRE_RELEASE%%[-+]*}"
+        VERSION_PRE_RELEASE=""
+        
+        case "$VERSION" in
+          *rc)
+            VERSION_PRE_RELEASE="${VERSION#rc}"
+            VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE%%+*}"
+            ;;
+          *-*)
+            VERSION_PRE_RELEASE="${VERSION#*-}"
+            VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE%%+*}"
+            ;;
+        esac
+        
         if [[ ${{github.ref_name}} == develop ]]; then
-          echo "stage=a" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          stage=a
+          version=${GITHUB_SHA::7}
         elif [[ ${{github.ref_name}} == master ]]; then
-          echo "stage=final" >> $GITHUB_OUTPUT
-          echo "version=final" >> $GITHUB_OUTPUT
+          stage=final
+          version=11111
         elif [[ ${{github.ref_name}} == releases/* ]]; then
-          echo "stage=rc" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
-          if [[ ${{ github.event_name }} 
+          stage=rc
+          version=${GITHUB_SHA::7}
         elif [[ ${{github.ref_name}} == tags/* ]]; then
-          echo "stage=rc" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          stage=final
+          version=${GITHUB_SHA::7}
         else
-          echo "stage=dev" >> $GITHUB_OUTPUT        
-          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          stage=a
+          version=${GITHUB_SHA::7}
         fi
         
-        echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+        echo "========"
+        echo $VERSION
+        echo "========"
+
+#        echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+#        echo "stage=rc" >> $GITHUB_OUTPUT
+#        echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
 #    - name: Describe
 #      id: describe

@@ -1,6 +1,6 @@
-name: Release Candidate
+name: Mileston
 on:
-  milestone:
+  create:
 #  workflow_run:
 #    workflows: ["Run Tests"]
 #    branches: ['releases/*']
@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    name: Build Image
     runs-on: ubuntu-20.04
     steps:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -30,3 +29,12 @@ jobs:
           echo "======== ${{ github.ref }} - ${{env.GITHUB_REF_NAME}} - ${GITHUB_REF##*/} ======="
 #          version=$(git describe --tags --dirty --always | sed -e 's/^v//')
 #          echo "Build release $version"
+#      - uses: valadas/get-release-branch-version@v1
+#        id: branchVersion
+#      - name: Dump the version info
+#        env:
+#          MAJOR: ${{ steps.branchVersion.outputs.major }}
+#          MINOR: ${{ steps.branchVersion.outputs.minor }}
+#          PATCH: ${{ steps.branchVersion.outputs.patch }}
+#          MANIFEST_SAFE_VERSION_STRING: ${{ steps.branchVersion.outputs.manifestSafeVersionString }}
+#        run: "echo major: $MAJOR minor: $MINOR patch: $PATCH manifestSafeVersionString: $MANIFEST_SAFE_VERSION_STRING"

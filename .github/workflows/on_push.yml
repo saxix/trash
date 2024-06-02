@@ -3,16 +3,10 @@ name: Run Tests
 on:
     push:
       branches:
-        - never
-#  workflow_call:
-#    outputs:
-#      hash:
-#        value: ${{ jobs.build.outputs.hash }}
-#      test_files:
-#        value: ${{ jobs.files-changed.outputs.test_files }}
-#      docker_files:
-#        value: ${{ jobs.files-changed.outputs.docker_files }}
-#
+      - develop
+      - releases/*
+      - master/*
+
 env:
   DOCKER_DEFAULT_PLATFORM: linux/amd64
 
@@ -20,7 +14,7 @@ env:
 jobs:
 
   files-changed:
-    name: detect what files changed
+    name: check files
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
@@ -52,14 +46,6 @@ jobs:
           fetch-depth: 0
       - id: release_hash
         uses: ./.github/actions/distro_hash
-
-      #        - name: Image name
-      #          id: image_name
-      #          run: |
-      #            image_name="${{vars.DOCKER_IMAGE}}:dev-${{ steps.release_hash.outputs.hash }}"
-      #            image_name_latest="${{vars.DOCKER_IMAGE}}:dev-latest"
-      #            echo "name=$image_name" >> $GITHUB_OUTPUT
-      #            echo "latest=$image_name_latest" >> $GITHUB_OUTPUT
       - id: image_exists
         name: Check if image exists
         if: ${{ !contains(github.event.head_commit.message, 'ci:rebuild') }}
@@ -73,8 +59,6 @@ jobs:
         run: |
           build_date=$(date +"%Y-%m-%d %H:%M")
           echo "date=$build_date" >> $GITHUB_OUTPUT
-      #            VERSION=$(git describe --tags --dirty --always | sed -e 's/^v//')
-      #            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v3
         if: ${{ steps.image_exists.outputs.exists == 'false' || contains(github.event.head_commit.message, 'ci:rebuild') }}
         with:
@@ -87,7 +71,7 @@ jobs:
         with:
           context: .
           image: ${{vars.DOCKER_IMAGE}}
-          tags: ${{vars.DOCKER_IMAGE}}:dev-latest
+          tags: ${{vars.DOCKER_IMAGE}}:dev-${{ steps.release_hash.outputs.hash }},${{vars.DOCKER_IMAGE}}:dev-latest
           file: ./docker/Dockerfile
           platforms: linux/amd64
           cache-from: type=registry,ref=${{vars.DOCKER_IMAGE}}:dev-latest
@@ -98,39 +82,6 @@ jobs:
             BUILD_DATE="${{ steps.build_date.outputs.date }}"
             CHECKSUM="${{ steps.release_hash.outputs.hash }}"
             VERSION="${{ steps.version.outputs.version }}"
-
-      #            context: .
-      #            registry: docker.io
-      #            file: .docker/Dockerfile
-      #            buildArgs: |
-      #              BUILD_DATE="${BUILD_DATE}"
-      #              CHECKSUM="${{ steps.release_hash.outputs.hash }}"
-      #            enableBuildKit: true
-      #            multiPlatform: true
-      #            platforms: linux/amd64
-      #            overrideDriver: true
-      #            image: ${{vars.DOCKER_IMAGE}}
-      #            tags: dev-${{ steps.release_hash.outputs.hash }},latest
-      #            outputs: type=docker,dest=/tmp/myimage.tar
-      #            username: ${{ secrets.DOCKER_USERNAME }}
-      #            password: ${{ secrets.DOCKER_PASSWORD }}
-      #        - name: Build Dev Image
-      #          if: ${{ steps.image_exists.outputs.exists == 'false' || contains(github.event.head_commit.message, 'rebuild') }}
-      #          id: docker_build
-      #          run: |
-      #            BUILD_DATE=$(date +"%Y-%m-%d %H:%M")
-      #            docker buildx create --use --platform x86_64 --name builder --driver docker-container
-      #            docker buildx build \
-      #              --platform x86_64 \
-      #              --builder builder \
-      #              --build-arg BUILD_DATE="${BUILD_DATE}" \
-      #              --build-arg CHECKSUM="${{ steps.release_hash.outputs.hash }}" \
-      #              --progress=plain \
-      #              -t ${{ steps.image_name.outputs.name }} \
-      #              -t ${{ steps.image_name.outputs.latest }} \
-      #              -f ./docker/Dockerfile \
-      #              --push \
-      #              --target python_dev_deps .
       - name: Dump Image Info
         run: |
           docker pull ${{vars.DOCKER_IMAGE}}:dev-latest
@@ -172,13 +123,6 @@ jobs:
   test:
     needs: [ build, lint, security ]
     runs-on: ubuntu-20.04
-    #      container:
-    #        image: saxix/trash:dev-latest
-    #        credentials:
-    #          username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #          password: ${{ secrets.DOCKERHUB_TOKEN }}
-    #        ports:
-    #          - 8000:8000
     services:
       redis:
         image: redis
