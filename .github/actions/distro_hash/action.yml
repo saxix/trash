@@ -13,13 +13,11 @@ outputs:
 
 runs:
   using: 'composite'
-#  args:
-#    - ${{ inputs.files }}
   steps:
-    - name: Calculate release hash
+    - name: Calculate Release Hash
       id: calc
       shell: bash --noprofile --norc -eo pipefail -ux {0}
       run: |
-        echo "========= ${{ inputs.files }}"
         LOCK_SHA=$(sha1sum ${{ inputs.files }} | sha1sum | awk '{print $1}' | cut -c 1-8)
+        echo "Release Hash on: ${{ inputs.files }} is $LOCK_SHA"
         echo "hash=$LOCK_SHA" >> "$GITHUB_OUTPUT"

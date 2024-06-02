@@ -1,0 +1,53 @@
+name: 'version'
+description: ''
+
+outputs:
+  stage:
+    description: 'The time we greeted you'
+    value: ${{ steps.parser.outputs.stage }}
+  version:
+    description: 'The time we greeted you'
+    value: ${{ steps.parser.outputs.version }}
+
+
+runs:
+  using: 'composite'
+  steps:
+#    - name: Configure Git
+#      shell: bash --noprofile --norc -eo pipefail -ux {0}
+#      run: |
+#        echo "22222222222"
+#        git config --global --add safe.directory $(realpath .)
+    - name: ch
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Parse branch
+      shell: bash --noprofile --norc -eo pipefail -ux {0}
+      id: parser
+      run: |
+        if [[ ${{github.ref_name}} == develop ]]; then
+          echo "stage=a" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        elif [[ ${{github.ref_name}} == master ]]; then
+          echo "stage=final" >> $GITHUB_OUTPUT
+          echo "version=final" >> $GITHUB_OUTPUT
+        elif [[ ${{github.ref_name}} == releases/* ]]; then
+          echo "stage=rc" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          if [[ ${{ github.event_name }} 
+        elif [[ ${{github.ref_name}} == tags/* ]]; then
+          echo "stage=rc" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        else
+          echo "stage=dev" >> $GITHUB_OUTPUT        
+          echo "version=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+#    - name: Describe
+#      id: describe
+#      shell: bash --noprofile --norc -eo pipefail -ux {0}
+#      run: |
+#        echo ${{ steps.branch.version }}
+#        ver=$(`git symbolic-ref HEAD 2> /dev/null | cut -b 12-`-`git log --pretty=format:"%h" -1`)
+#        echo "version=$ver" >> $GITHUB_OUTPUT

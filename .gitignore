@@ -5,6 +5,7 @@ dist/
 __pycache__
 .tox
 !.github
+!.git
 !.bumpversion.cfg
 !tests/.coveragerc
 pdm.lock

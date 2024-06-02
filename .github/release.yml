@@ -1,0 +1,23 @@
+name: release
+on:
+  push:
+    branches:
+    - releases/*rc
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches: ['releases/*rc']
+    types:
+      - completed
+
+jobs:
+  release_rc:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/version
+      - name: Build
+        run: |
+          ls -al
+#          version=$(git describe --tags --dirty --always | sed -e 's/^v//')
+#          echo "Build release $version"

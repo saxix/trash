@@ -27,10 +27,10 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Check Image Updatd
+    - name: Check Image Updated
+      id: check
       continue-on-error: true
       shell: bash --noprofile --norc -eo pipefail -ux {0}
-#        docker manifest inspect --format='{{json .Config.Labels}}' ${{inputs.image}}
       run: |
         set +e
         ref=${{ inputs.image }}

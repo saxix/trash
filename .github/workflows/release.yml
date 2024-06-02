@@ -1,17 +1,26 @@
-name: release
+name: Final
 on:
-  push:
-    tags:
-      - v*
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+
 jobs:
-  release:
-    if: github.event.pull_request.merged == true
-    name: release
-    runs-on: ubuntu-latest
+  parent:
+      uses: ./.github/workflows/test.yml
+      secrets: inherit
+  release_build_final:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-20.04
+    needs: [parent]
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
+#      - uses: actions/checkout@v4
+      - name: Build RC docker
         run: |
-          ls -al
+          echo "======== ${{ needs.parent.outputs.hash }} ==============="
+          echo "======== ${{ needs.parent.outputs.test_files }} ==============="
+          echo "======== ${{ needs.parent.outputs.docker_files }} ==============="
+          echo "======== ${{ github.ref }} - ${{env.GITHUB_REF_NAME}} ======="
 #          version=$(git describe --tags --dirty --always | sed -e 's/^v//')
 #          echo "Build release $version"
