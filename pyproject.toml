@@ -9,8 +9,9 @@ dependencies = [
     "django>=5.0.6",
     "django-environ>=0.11.2",
     "psycopg2-binary>=2.9.9",
+    "uwsgi>=2.0.26",
 ]
-requires-python = ">3.12"
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -20,7 +21,7 @@ version = "0.32.0"
 description = "description"
 readme = "README.md"
 authors = ["sax <s.apostolico@gmail.com>"]
-distribution = false
+distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [

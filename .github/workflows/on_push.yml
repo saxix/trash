@@ -10,7 +10,6 @@ on:
 env:
   DOCKER_DEFAULT_PLATFORM: linux/amd64
 
-
 jobs:
 
   files-changed:
@@ -54,7 +53,6 @@ jobs:
           image: ${{vars.DOCKER_IMAGE}}:dev-latest
           checksum: ${{ steps.release_hash.outputs.hash }}
       - id: build_date
-        name: Get version
         if: ${{ steps.image_exists.outputs.exists == 'false' || contains(github.event.head_commit.message, 'ci:rebuild') }}
         run: |
           build_date=$(date +"%Y-%m-%d %H:%M")
@@ -71,7 +69,7 @@ jobs:
         with:
           context: .
           image: ${{vars.DOCKER_IMAGE}}
-          tags: ${{vars.DOCKER_IMAGE}}:dev-${{ steps.release_hash.outputs.hash }},${{vars.DOCKER_IMAGE}}:dev-latest
+          tags: ${{vars.DOCKER_IMAGE}}:dev-latest
           file: ./docker/Dockerfile
           platforms: linux/amd64
           cache-from: type=registry,ref=${{vars.DOCKER_IMAGE}}:dev-latest
@@ -170,29 +168,40 @@ jobs:
           verbose: false
           name: codecov-${{env.GITHUB_REF_NAME}}
 
-  version:
-    runs-on: ubuntu-20.04
+  release_snapshot:
+    runs-on: ubuntu-22.04
     steps:
-      - id: version
-        uses: ./.github/actions/version
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - id: env
+        uses: ./.github/actions/env
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        if: ${{ steps.env.outputs.release == 'snapshot' || contains(github.event.head_commit.message, 'ci:snapshot') }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          image: ${{vars.DOCKER_IMAGE}}
+          tags: ${{vars.DOCKER_IMAGE}}:snapshot
+          file: ./docker/Dockerfile
+          platforms: linux/amd64
+          cache-from: type=registry,ref=${{vars.DOCKER_IMAGE}}:dev-latest
+          cache-to: type=inline
+          outputs: type=registry
+          target: dist
 
-#
-#    teardown:
-#      needs: [test]
-#      runs-on: ubuntu-20.04
-#      steps:
-#        - uses: actions/download-artifact@v4
-#          with:
-#            name: coverage
-#            path: coverage.xml
-#        - name: Upload coverage to Codecov
-#          uses: codecov/codecov-action@v4
-#          with:
-#            directory: ./coverage/reports/
-#            env_vars: OS,PYTHON
-#            fail_ci_if_error: true
-#            files: coverage.xml
-#            flags: unittests
-#            name: codecov-umbrella
-#            token: ${{ secrets.CODECOV_TOKEN }}
-#            verbose: true
+          build-args: |
+            BUILD_DATE=${{ steps.env.outputs.today }}
+            CHECKSUM=${{ steps.env.outputs.hash }}
+            VERSION=${{ steps.env.outputs.version }}
+            SOURCE_COMMIT=${{ steps.env.outputs.commit }}
+            GITHUB_SERVER_URL=${{ github.server_url }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+      - uses: ./.github/docker_info
+        with:
+          image: ${{vars.DOCKER_IMAGE}}:snapshot
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}

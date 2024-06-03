@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:37d7270be49d7feed1ff2cac47d92a752207c62f1ff54736701edc7804282446"
+content_hash = "sha256:13615cd552e842d19da1d770c6aa77e8b100f33faf629dca4951827bbb2da659"
 
 [[package]]
 name = "asgiref"
@@ -565,6 +565,15 @@ marker = "sys_platform == \"win32\""
 files = [
     {file = "tzdata-2024.1-py2.py3-none-any.whl", hash = "sha256:9068bc196136463f5245e51efda838afa15aaeca9903f49050dfa2679db4d252"},
     {file = "tzdata-2024.1.tar.gz", hash = "sha256:2674120f8d891909751c38abcdfd386ac0a5a1127954fbc332af6b5ceae07efd"},
+]
+
+[[package]]
+name = "uwsgi"
+version = "2.0.26"
+summary = "The uWSGI server"
+groups = ["default"]
+files = [
+    {file = "uwsgi-2.0.26.tar.gz", hash = "sha256:86e6bfcd4dc20529665f5b7777193cdc48622fb2c59f0a7f1e3dc32b3882e7f9"},
 ]
 
 [[package]]

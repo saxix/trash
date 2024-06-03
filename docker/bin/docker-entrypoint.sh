@@ -1,10 +1,10 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 
 alias env='env|sort'
+
 export MEDIA_ROOT="${MEDIA_ROOT:-/var/media}"
 export STATIC_ROOT="${STATIC_ROOT:-/var/static}"
-export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-"hope_dedup_engine.config.settings"}"
 export UWSGI_PROCESSES="${UWSGI_PROCESSES:-"4"}"
 
 
