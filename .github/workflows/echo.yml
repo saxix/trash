@@ -1,3 +1,5 @@
+name: "[DEBUG] Echo"
+
 on:
   check_run:
   create:

@@ -1,4 +1,4 @@
-name: Dump Env vars
+name: "[DEBUG] Dump"
 
 on:
   check_run:

@@ -1,3 +1,5 @@
+name: "[CALL] Build"
+
 on:
   workflow_call:
     inputs:
