@@ -3,10 +3,10 @@ description: ''
 
 outputs:
   stage:
-    description: 'The time we greeted you'
+    description: 'Docker stage to use'
     value: ${{ steps.parser.outputs.stage }}
   version:
-    description: 'The time we greeted you'
+    description: 'Docker T'
     value: ${{ steps.parser.outputs.version }}
   commit:
     description: 'The time we greeted you'

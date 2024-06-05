@@ -1,0 +1,35 @@
+name: Release Candidate
+on:
+  pull_request:
+    branches:
+    - releases/*
+#  workflow_run:
+#    workflows: ["Run Tests"]
+#    branches: ['releases/*']
+#    types:
+#      - completed
+
+jobs:
+  parent:
+      uses: ./.github/workflows/test.yml
+      secrets: inherit
+  version:
+    runs-on: ubuntu-20.04
+    needs: [parent]
+    steps:
+      - id: version
+        uses: ./.github/actions/version
+  release_rc:
+    runs-on: ubuntu-20.04
+    needs: [parent, version]
+    steps:
+      - name: Build RC docker
+        run: |
+          echo "======== ${{ steps.version.outputs.version }} ==============="
+          echo "======== ${{ needs.parent.outputs.hash }} ==============="
+          echo "======== ${{ needs.parent.outputs.test_files }} ==============="
+          echo "======== ${{ needs.version.outputs.version }} ==============="
+          echo "======== ${{ needs.parent.outputs.docker_files }} ==============="
+          echo "======== ${{ github.ref }} - ${{env.GITHUB_REF_NAME}} - ${GITHUB_REF##*/} ======="
+#          version=$(git describe --tags --dirty --always | sed -e 's/^v//')
+#          echo "Build release $version"

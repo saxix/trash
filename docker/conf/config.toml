@@ -1,7 +1,8 @@
 check_update = false
-cache_dir = "/cache/"
+#cache_dir = "/pdm_cache/"
 install.parallel = false
-install.cache = true
+install.cache = false
+install.cache_method='symlinks'
 
 [python]
 use_venv = false

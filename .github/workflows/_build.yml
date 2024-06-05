@@ -1,0 +1,97 @@
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: "Image name to build and push"
+        required: true
+        type: string
+        default: false
+      checksum:
+        description: "Dependencies checksum to check to evaluate build"
+        required: false
+        type: string
+        default: false
+      target:
+        description: "Dockerfile stage to stop to"
+        required: true
+        type: string
+        default: "-"
+      force:
+        description: "Force rebuild event is checksum matches"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  builder:
+    name: Build Image
+    runs-on: ubuntu-20.04
+    outputs:
+      hash: ${{ steps.release_hash.outputs.hash }}
+    steps:
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: release_hash
+        uses: ./.github/actions/distro_hash
+#      - name: Extract branch name
+#        shell: bash
+#        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+#        id: extract_branch
+      - id: image_updated
+        name: Check if image exists
+#        if: ${{ inputs.force }}
+        uses: ./.github/actions/image_updated
+        with:
+          image: "${{inputs.image}}"
+          checksum: ${{ steps.release_hash.outputs.hash }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+      - id: build_date
+        if: ${{ steps.image_exists.outputs.exists == 'false' || inputs.force }}
+        run: |
+          build_date=$(date +"%Y-%m-%d %H:%M")
+          echo "date=$build_date" >> $GITHUB_OUTPUT
+      - run: |
+          echo "====================================="
+          echo image: ${{inputs.image}}
+          echo target: ${{ inputs.target }}
+          echo checksum: ${{inputs.checksum}}
+          echo image_exists: ${{steps.image_updated.outputs.exists}}
+          echo force: ${{inputs.force}}
+          echo build: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force }}
+          echo "====================================="
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64
+      - name: Build and push
+        if: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          tags: "${{ inputs.image }}"
+          file: ./docker/Dockerfile
+          platforms: linux/amd64
+          cache-from: "type=registry,ref=${{inputs.image}}"
+          cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+          target: "${{ inputs.target }}"
+          build-args: |
+            BUILD_DATE="${{ steps.build_date.outputs.date }}"
+            CHECKSUM="${{ steps.release_hash.outputs.hash }}"
+            VERSION="${{ steps.version.outputs.version }}"
+            SOURCE_COMMIT="${GITHUB_SHA::7}"
+      - name: Dump Image Info
+        run: |
+          echo "Pulling... ${{ inputs.image }}"
+          docker pull ${{ inputs.image }}
+          echo "----------"
+          docker inspect --format='{{json .Config.Labels}}' ${{ inputs.image }}
+          docker run -t ${{ inputs.image }} release-info.sh
+          echo "----------"

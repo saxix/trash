@@ -1,6 +1,6 @@
 # ref: https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action
 name: 'Check if image with valid checksum exists in dockerhub'
-description: ''
+description: 'WARNING: Only works for single platform images'
 inputs:
   image:
     description: 'Docker Image '
@@ -22,7 +22,7 @@ inputs:
 outputs:
   exists:
     description: 'The time we greeted you'
-    value: ${{ steps.check.outputs.exixts }}
+    value: ${{ steps.check.outputs.exists }}
 
 runs:
   using: 'composite'
@@ -48,10 +48,12 @@ runs:
           checksum=$(curl -H "Accept: application/vnd.docker.container.image.v1+json" \
                -H "Authorization: Bearer $token" \
                -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}" | jq --raw-output '.config.Labels.${{ inputs.label }}' )
+        e="false"
+        
         if [ $checksum = '"${{ inputs.checksum }}"' ];then
-          echo "exists=true" >> "$GITHUB_OUTPUT"
+          e="true"
           echo "Image ${{inputs.image}} found"
         else
-          echo "exists=false" >> "$GITHUB_OUTPUT"
           echo "Image ${{inputs.image}} does not exist"
         fi
+        echo "exists=$e" >> "$GITHUB_OUTPUT"

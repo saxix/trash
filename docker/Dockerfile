@@ -26,10 +26,8 @@ ARG GOSU_VERSION=1.17
 ARG GOSU_SHA256=bbc4136d03ab138b1ad66fa4fc051bafc6cc7ffae632b069a53657279a450de3
 ARG TINI_VERSION=0.19.0
 ARG TINI_SHA256=93dcc18adc78c65a028a84799ecf8ad40c936fdfc5f2a57b1acda5a8117fa82c
-
 ARG WAITFOR_IT_VERSION=2.4.1
 ARG WAITFOR_IT_MD5=cd67c8e45436c4a7b2b707d7a5b15a66
-SHELL ["/bin/bash", "-c"]
 
 
 RUN set -x \
@@ -56,6 +54,7 @@ RUN \
     && apt-get update  \
     && apt-get install -y --no-install-recommends  \
       postgresql-client \
+      libxml2  \
       mime-support  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -76,11 +75,32 @@ ENV buildDeps="build-essential \
   zlib1g-dev \
 "
 
-RUN apt-get update  \
-    && apt-get install -y --no-install-recommends \
-    $buildDeps \
+RUN set -x \
+    && buildDeps="build-essential \
+        cmake \
+        curl \
+        gcc \
+        libgdal-dev \
+        libgif-dev \
+        libjpeg-dev \
+        liblapack-dev \
+        libopenblas-dev \
+        libpng-dev  \
+        libpq-dev \
+        libwebp-dev \
+        libssl-dev \
+        libxml2-dev  \
+        python3-dev \
+        zlib1g-dev  \
+    " \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $buildDeps \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PATH=${APATH}:${PATH} \
+    PYTHONPATH=${APYTHONPATH}:/code/app/src \
+    PYTHONDONTWRITEBYTCODE=1
 
 
 FROM build_deps AS python_dev_deps
@@ -88,97 +108,43 @@ ARG PKG_DIR
 ARG CHECKSUM
 ARG VERSION
 ARG BUILD_DATE
-ARG APATH
-ARG APYTHONPATH
 
 LABEL date="$BUILD_DATE"
 LABEL version="$VERSION"
 LABEL checksum="$CHECKSUM"
-ENV PATH=${APATH}:${PATH} \
-    PYTHONPATH=${APYTHONPATH}:/code/app/src \
-    PYTHONDONTWRITEBYTCODE=1
+
 
 WORKDIR /code
 COPY pyproject.toml pdm.lock ./
 COPY docker/conf/config.toml /etc/xdg/pdm/config.toml
 
 RUN set -x \
-    && buildDeps="build-essential \
-        cmake \
-        curl \
-        gcc \
-        libgdal-dev \
-        libgif-dev \
-        libjpeg-dev \
-        liblapack-dev \
-        libopenblas-dev \
-        libpng-dev  \
-        libpq-dev \
-        libwebp-dev \
-        libssl-dev \
-        libxml2-dev  \
-        python3-dev \
-        zlib1g-dev  \
-    " \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends $buildDeps \
     && pip install -U pip pdm \
     && mkdir -p $PKG_DIR \
     && pdm sync --no-editable -v --no-self
 
 
-FROM build_deps AS python_prod_deps
+FROM python_dev_deps AS python_prod_deps
+ARG PKG_DIR
+ARG CHECKSUM
+ARG VERSION
+ARG BUILD_DATE
+
+LABEL date="$BUILD_DATE"
+LABEL version="$VERSION"
+LABEL checksum="$CHECKSUM"
+
 WORKDIR /code
 COPY docker/conf/config.toml /etc/xdg/pdm/config.toml
 COPY pyproject.toml pdm.lock ./
 COPY ./src /code/src
-#COPY --from=python_dev_deps /cache /cache
+#COPY --from=python_dev_deps /pdm_cache /pdm_cache
 #COPY --chown=user:app --from=python_prod_deps $PKG_DIR/bin/uwsgi $PKG_DIR/bin/uwsgi
 
-ENV PATH=${APATH}:${PATH} \
-    PYTHONPATH=${APYTHONPATH} \
-    PYTHONDONTWRITEBYTCODE=1
 
-RUN set -x \
-    && buildDeps="build-essential \
-        cmake \
-        curl \
-        gcc \
-        libgdal-dev \
-        libgif-dev \
-        libjpeg-dev \
-        liblapack-dev \
-        libopenblas-dev \
-        libpng-dev  \
-        libpq-dev \
-        libwebp-dev \
-        libssl-dev \
-        libxml2-dev  \
-        python3-dev \
-        zlib1g-dev  \
-    " \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends $buildDeps \
-    && mkdir -p $PKG_DIR \
-    & pip install -U pdm \
-    && pdm sync --no-editable -v --prod \
-    && apt-get purge -y --auto-remove $buildDeps
-
-RUN apt-get install -y --no-install-recommends  \
-      postgresql-client \
-      libgl1  \
-      libglib2.0-0 \
-      libffi8 \
-      libmagic1 \
-      libpng16-16  \
-      libxml2  \
-      mime-support  \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-#FROM python_base AS dev
-#COPY --chown=app:user --from=python_dev_deps /code/__pypackages__ /code/__pypackages__
-#COPY ./src /code/src
+RUN mkdir -p $PKG_DIR \
+    && pip install -U pdm \
+    && pdm sync --no-editable -v --prod
 
 
 FROM python_base AS dist
@@ -190,19 +156,9 @@ ARG BUILD_DATE
 ARG GITHUB_SERVER_URL
 ARG GITHUB_REPOSITORY
 ARG SOURCE_COMMIT
-LABEL date=$BUILD_DATE
-LABEL version=$VERSION
-LABEL checksum=$CHECKSUM
-ENV PATH=${APATH}:${PATH} \
-    PYTHONPATH=${APYTHONPATH} \
-    PYTHONDONTWRITEBYTCODE=1 \
-    PDM_CHECK_UPDATE=0 \
-    PDM_CACHE_DIR=/cache/ \
-    PDM_USE_VENV=0 \
-    PDM_INSTALL_PARALLEL=0
 
 WORKDIR /code
-COPY --chown=user:app --from=python_prod_deps /code/__pypackages__ /code/__pypackages__
+COPY --chown=user:app --from=python_prod_deps /code /code
 RUN <<EOF cat> /RELEASE
 {"version": "$VERSION",
  "commit": "$SOURCE_COMMIT",
@@ -211,9 +167,10 @@ RUN <<EOF cat> /RELEASE
  "source": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${SOURCE_COMMIT:-master}/"
 }
 EOF
-#USER user
-CMD "run"
+VOLUME /var/run/app/
+EXPOSE 8000
 ENTRYPOINT exec docker-entrypoint.sh "$0" "$@"
+CMD ["run"]
 
 LABEL maintainer="mnt@app.io"
 LABEL org.opencontainers.image.authors="author@app.io"

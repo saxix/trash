@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - develop
+
+env:
+  DOCKER_DEFAULT_PLATFORM: linux/amd64
+
+jobs:
+
+    build:
+#      if: ${{ !github.event.act }}
+      runs-on: ubuntu-20.04
+      outputs:
+        docker-image: ${{ steps.image_name.outputs.name }}
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - uses: ./.github/actions/hash
+          id: release_hash
+#
+#        - name: Image name
+#          id: image_name
+#          run: |
+#            image_name="${{vars.DOCKER_IMAGE}}:dev-${{ steps.release_hash.outputs.hash }}"
+#            image_name_latest="${{vars.DOCKER_IMAGE}}:dev-latest"
+#            echo "name=$image_name" >> $GITHUB_OUTPUT
+#            echo "latest=$image_name_latest" >> $GITHUB_OUTPUT
+#        - name: Check if image exists
+#          uses: ./.github/actions/image_exists
+#          id: image_exists
+#          with:
+#            image: ${{ steps.image_name.outputs.name }}
+#            username: ${{ secrets.DOCKERHUB_USERNAME }}
+#            password: ${{ secrets.DOCKERHUB_TOKEN }}
+        - name: Cache Primes
+          id: cache-image
+          uses: actions/cache@v4
+          with:
+            path: /tmp/image/
+            key: ${{ steps.release_hash.outputs.hash }}-dev
+        - name: Customize Docker driver
+          if: steps.cache-image.outputs.cache-hit != 'true'
+          uses: docker/setup-buildx-action@v2
+
+#          with:
+#            driver-opts: image=moby/buildkit:v0.11.0
+        - name: Build and push
+          if: steps.cache-image.outputs.cache-hit != 'true'
+          uses: docker/build-push-action@v2
+          with:
+            context: .
+            image: ${{vars.DOCKER_IMAGE}}
+            tags: dev-${{ steps.release_hash.outputs.hash }},latest
+            file: ./docker/Dockerfile
+            platforms: linux/amd64
+            outputs: type=docker,dest=/tmp/image/myimage.tar
+        - name: Upload artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: app
+            path: /tmp/myimage.tar
+        - name: Load Docker images from previous workflows
+          run: |
+            docker load --input /tmp/image/myimage.tar
+        - run: docker image ls
+        #            context: .
+#            registry: docker.io
+#            file: .docker/Dockerfile
+#            buildArgs: |
+#              BUILD_DATE="${BUILD_DATE}"
+#              CHECKSUM="${{ steps.release_hash.outputs.hash }}"
+#            enableBuildKit: true
+#            multiPlatform: true
+#            platforms: linux/amd64
+#            overrideDriver: true
+#            image: ${{vars.DOCKER_IMAGE}}
+#            tags: dev-${{ steps.release_hash.outputs.hash }},latest
+#            outputs: type=docker,dest=/tmp/myimage.tar
+#            username: ${{ secrets.DOCKER_USERNAME }}
+#            password: ${{ secrets.DOCKER_PASSWORD }}
+#        - name: Build Dev Image
+#          if: ${{ steps.image_exists.outputs.exists == 'false' || contains(github.event.head_commit.message, 'rebuild') }}
+#          id: docker_build
+#          run: |
+#            BUILD_DATE=$(date +"%Y-%m-%d %H:%M")
+#            docker buildx create --use --platform x86_64 --name builder --driver docker-container
+#            docker buildx build \
+#              --platform x86_64 \
+#              --builder builder \
+#              --build-arg BUILD_DATE="${BUILD_DATE}" \
+#              --build-arg CHECKSUM="${{ steps.release_hash.outputs.hash }}" \
+#              --progress=plain \
+#              -t ${{ steps.image_name.outputs.name }} \
+#              -t ${{ steps.image_name.outputs.latest }} \
+#              -f ./docker/Dockerfile \
+#              --push \
+#              --target python_dev_deps .
+        - name: Dump Image Info
+          run: |
+            echo "----------"
+            docker pull ${{ steps.image_name.outputs.latest }}
+            docker inspect --format='{{json .Config.Labels}}' ${{ steps.image_name.outputs.latest }}
+            echo "----------"
+
+    lint:
+      runs-on: ubuntu-20.04
+      needs: [build]
+      container:
+        image: ${{ steps.image_name.outputs.latest }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Info
+          run: |
+              ls -al
+              env | sort
+              pwd
+        - name: Black
+          run: black --check src/
+        - name: Flake8
+          run: flake8 src/
+
+    security:
+      runs-on: ubuntu-20.04
+      needs: [build, lint]
+      container:
+        image: ${{ steps.image_name.outputs.latest }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      steps:
+        - name: Bandit
+          run: bandit src/
+
+    test:
+      needs: [build, lint, security]
+      runs-on: ubuntu-20.04
+      container:
+        image: ${{ steps.image_name.outputs.latest }}
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        ports:
+          - 8000:8000
+      services:
+        redis:
+          image: redis
+        db:
+          image: postgres:14
+          env:
+            POSTGRES_DATABASE: dedupe
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_USERNAME: postgres
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+      env:
+        DATABASE_URL: postgres://postgres:postgres@db:5432/dedupe
+        SECRET_KEY: secret_key
+        CACHE_URL: redis://redis:6379/0
+        CELERY_BROKER_URL: redis://redis:6379/0
+        PYTHONPATH: "/hde/code/src:/hde/__pypackages__/3.12/lib"
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Run tests
+          run: |
+            pytest tests -v --cov --cov-report xml:coverage.xml
+        - name: Upload coverage to Codecov
+          uses: codecov/codecov-action@v4
+          with:
+            directory: ./coverage/reports/
+            env_vars: OS,PYTHON
+            fail_ci_if_error: true
+            files: coverage.xml
+            flags: unittests
+            name: codecov-umbrella
+            token: ${{ secrets.CODECOV_TOKEN }}
+            verbose: true
