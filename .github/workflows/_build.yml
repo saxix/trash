@@ -44,18 +44,20 @@ jobs:
 #        id: extract_branch
       - id: image_updated
         name: Check if image exists
-#        if: ${{ inputs.force }}
+        if: ${{ !inputs.force }}
         uses: ./.github/actions/image_updated
         with:
           image: "${{inputs.image}}"
           checksum: ${{ steps.release_hash.outputs.hash }}
           username: ${{ secrets.username }}
           password: ${{ secrets.password }}
-      - id: build_date
+      - id: setup
         if: ${{ steps.image_exists.outputs.exists == 'false' || inputs.force }}
         run: |
+          tag="${{ inputs.image }}"
           build_date=$(date +"%Y-%m-%d %H:%M")
           echo "date=$build_date" >> $GITHUB_OUTPUT
+          echo "image=${tag%:*}" >> $GITHUB_OUTPUT
       - run: |
           echo "====================================="
           echo image: ${{inputs.image}}
@@ -78,7 +80,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          image: "${{ inputs.image }}"
+          image: "${{ steps.setup.outputs.image }}"
           tags: "${{ inputs.image }}"
           file: ./docker/Dockerfile
           platforms: linux/amd64
@@ -86,7 +88,7 @@ jobs:
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           target: "${{ inputs.target }}"
           build-args: |
-            BUILD_DATE="${{ steps.build_date.outputs.date }}"
+            BUILD_DATE="${{ steps.setup.outputs.date }}"
             CHECKSUM="${{ steps.release_hash.outputs.hash }}"
             VERSION="${{ steps.version.outputs.version }}"
             SOURCE_COMMIT="${GITHUB_SHA::7}"
