@@ -1,5 +1,12 @@
 name: Lint mypy
-on: [push]
+on:
+  push:
+    branches:
+      - develop
+      - master
+      - staging
+      - releases/*
+
 
 permissions:
   contents: read

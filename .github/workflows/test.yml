@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - develop
+      - master
+      - staging
+      - releases/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
