@@ -80,13 +80,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          image: "${{ steps.setup.outputs.image }}"
           tags: "${{ inputs.image }}"
           file: ./docker/Dockerfile
           platforms: linux/amd64
           cache-from: "type=registry,ref=${{inputs.image}}"
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           target: "${{ inputs.target }}"
+          outputs: type=registry
           build-args: |
             BUILD_DATE="${{ steps.setup.outputs.date }}"
             CHECKSUM="${{ steps.release_hash.outputs.hash }}"
