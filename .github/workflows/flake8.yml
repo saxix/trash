@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  flake8:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
