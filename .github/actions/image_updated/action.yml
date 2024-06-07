@@ -94,11 +94,10 @@ runs:
         if [[ $checksum == null ]]; then
           echo "Invalid Blob from: https://registry-1.docker.io/v2/$repo/blobs/$digest"
           ret=false
-        else
+        elif [[ $checksum == ${{inputs.checksum}} ]]; then
           ret=true
+        else
+          echo "Checksums do not match $checksum <> ${{inputs.checksum}}"
+          ret=false
         fi
         echo "exists=${ret}" >> "$GITHUB_OUTPUT"
-    - name: Check Image Updatedset results
-      shell: bash --noprofile --norc -eo pipefail -ux {0}
-      run: |
-        echo 2222, ${{ steps.check.outputs.exitcode }}

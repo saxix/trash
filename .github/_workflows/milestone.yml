@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Checkout code
@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - id: version
         uses: ./.github/actions/version
-#    runs-on: ubuntu-20.04
+#    runs-on: ubuntu-22.04
 #    needs: [ aa]
 #    steps:
       - name: Build RC docker

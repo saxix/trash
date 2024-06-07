@@ -40,7 +40,7 @@ jobs:
 
   build:
     name: Build Image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ files-changed ]
     outputs:
       hash: ${{ steps.release_hash.outputs.hash }}

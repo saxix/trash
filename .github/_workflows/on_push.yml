@@ -33,7 +33,7 @@ jobs:
 
   build:
     name: Build Image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ files-changed ]
     outputs:
       hash: ${{ steps.release_hash.outputs.hash }}
@@ -90,7 +90,7 @@ jobs:
 
   lint:
     if: ${{ steps.changes.outputs.python || contains(github.event.head_commit.message, 'ci:lint') }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ build ]
     container:
       image: saxix/trash:dev-latest
@@ -105,7 +105,7 @@ jobs:
         run: isort --check-only src/
 
   security:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ build, lint ]
     container:
       image: saxix/trash:dev-latest
@@ -120,7 +120,7 @@ jobs:
 
   test:
     needs: [ build, lint, security ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     services:
       redis:
         image: redis

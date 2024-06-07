@@ -14,13 +14,13 @@ jobs:
       uses: ./.github/workflows/test.yml
       secrets: inherit
   version:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [parent]
     steps:
       - id: version
         uses: ./.github/actions/version
   release_rc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [parent, version]
     steps:
       - name: Build RC docker

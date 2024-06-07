@@ -128,7 +128,7 @@ jobs:
           run: flake8 src/
 
     security:
-      runs-on: ubuntu-20.04
+      runs-on: ubuntu-22.04
       needs: [build, lint]
       container:
         image: ${{ steps.image_name.outputs.latest }}
@@ -141,7 +141,7 @@ jobs:
 
     test:
       needs: [build, lint, security]
-      runs-on: ubuntu-20.04
+      runs-on: ubuntu-22.04
       container:
         image: ${{ steps.image_name.outputs.latest }}
         credentials:

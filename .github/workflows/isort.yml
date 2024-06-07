@@ -1,11 +1,14 @@
 name: Lint iSort
 on:
-  push:
-    branches:
-      - develop
-      - master
-      - staging
-      - releases/*
+#  push:
+#    branches:
+#      - develop
+#      - master
+#      - staging
+#      - releases/*
+  pull_request:
+    branches: [develop, master]
+    types: [synchronize, opened, reopened, ready_for_review]
 
 permissions:
   contents: read
