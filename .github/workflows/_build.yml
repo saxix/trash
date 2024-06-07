@@ -76,8 +76,9 @@ jobs:
           echo target: ${{ inputs.target }}
           echo checksum: ${{inputs.checksum}}
           echo image_exists: ${{steps.image_updated.outputs.exists}}
+          echo build_number: ${{steps.image_updated.outputs.build_number}}
           echo force: ${{inputs.force}}
-          echo build: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force == 'true' }}
+          echo build: ${{ steps.image_updated.outputs.exists != 'true' || inputs.force == 'true' }}
           echo "====================================="
       - uses: docker/login-action@v3
         with:
@@ -90,7 +91,7 @@ jobs:
           driver: docker-container
           driver-opts: 'image=moby/buildkit:v0.10.5'
       - name: Build and push
-        if: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force == 'true' }}
+        if: ${{ steps.image_updated.outputs.exists != 'true' || inputs.force == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .

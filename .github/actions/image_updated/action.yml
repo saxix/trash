@@ -27,6 +27,9 @@ outputs:
   exists:
     description: 'Returns true if the image exists and the checksum is valid'
     value: ${{ steps.check.outputs.exists }}
+  build_number:
+      description: 'Returns true if the image exists and the checksum is valid'
+      value: ${{ steps.check.outputs.build_number }}
 
 runs:
   using: 'composite'
@@ -71,7 +74,11 @@ runs:
           echo "Single platform manifest found "
           digest=$(echo $manifest | jq -r '.config.digest' 2>&1)
         fi
-        
+        if [[ $digest == null ]]; then
+          echo "Unable to get digest "
+          echo $manifest | jq
+          echo "exists=false" >> "$GITHUB_OUTPUT"         
+        fi
         if [[ -z "$digest" ]];then
           echo "Unable to get digest "
           echo $manifest | jq
@@ -90,6 +97,14 @@ runs:
           exit 1
         fi
         checksum=$(echo $blob | jq '.config.Labels.checksum')
+        build_number=$(echo $blob | jq '.config.Labels.build_number')
+        
+        if [[ $build_number == null ]]; then
+          build_number=$((build_number+1))
+        else
+          build_number = 1
+        fi
+        
         ret='???'
         if [[ $checksum == null ]]; then
           echo "Invalid Blob from: https://registry-1.docker.io/v2/$repo/blobs/$digest"
@@ -101,3 +116,4 @@ runs:
           ret=false
         fi
         echo "exists=${ret}" >> "$GITHUB_OUTPUT"
+        echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
