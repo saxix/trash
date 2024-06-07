@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      dry_run:
+        description: "Force rebuild event is checksum matches"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   builder:
@@ -30,21 +35,26 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       hash: ${{ steps.release_hash.outputs.hash }}
+      updated: ${{ steps.image_updated.outputs.exists }}
+      image: ${{ steps.setup.outputs.image }}
+      built: ${{ steps.release_hash.outputs.hash }}
+    environment:
+      DOCKER_DEFAULT_PLATFORM=linux/amd64
     steps:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - run: |
+          echo "${{inputs.image}}"
+          echo "${{inputs.force}}"
+          echo "${{inputs.force}} == 'false'"
       - id: release_hash
         uses: ./.github/actions/distro_hash
-#      - name: Extract branch name
-#        shell: bash
-#        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-#        id: extract_branch
       - id: image_updated
         name: Check if image exists
-        if: ${{ !inputs.force }}
+#        if: ${{ !inputs.force }}
         uses: ./.github/actions/image_updated
         with:
           image: "${{inputs.image}}"
@@ -52,7 +62,7 @@ jobs:
           username: ${{ secrets.username }}
           password: ${{ secrets.password }}
       - id: setup
-        if: ${{ steps.image_exists.outputs.exists == 'false' || inputs.force }}
+#        if: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force }}
         run: |
           tag="${{ inputs.image }}"
           build_date=$(date +"%Y-%m-%d %H:%M")
@@ -60,7 +70,9 @@ jobs:
           echo "image=${tag%:*}" >> $GITHUB_OUTPUT
       - run: |
           echo "====================================="
-          echo image: ${{inputs.image}}
+          echo date: ${{steps.setup.outputs.date}}
+          echo image: ${{steps.setup.outputs.image}}
+          echo tag: ${{inputs.image}}
           echo target: ${{ inputs.target }}
           echo checksum: ${{inputs.checksum}}
           echo image_exists: ${{steps.image_updated.outputs.exists}}
@@ -75,23 +87,27 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           platforms: linux/amd64
+          driver: docker-container
+          driver-opts: 'image=moby/buildkit:v0.10.5'
       - name: Build and push
-        if: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force }}
+        if: ${{ (steps.image_updated.outputs.exists == 'false' || inputs.force) && !inputs.dry_run }}
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: "${{ inputs.image }}"
+          tags: ${{ inputs.image }}
+          target: ${{ inputs.target }}
           file: ./docker/Dockerfile
           platforms: linux/amd64
-          cache-from: "type=registry,ref=${{inputs.image}}"
-          cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
-          target: "${{ inputs.target }}"
           outputs: type=registry
+          enableBuildKit: true
+          image-manifest: true
+#          cache-from: "type=registry,ref=${{inputs.image}}"
+#          cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           build-args: |
-            BUILD_DATE="${{ steps.setup.outputs.date }}"
-            CHECKSUM="${{ steps.release_hash.outputs.hash }}"
-            VERSION="${{ steps.version.outputs.version }}"
-            SOURCE_COMMIT="${GITHUB_SHA::7}"
+            BUILD_DATE=${{ steps.setup.outputs.date }}
+            CHECKSUM=${{ steps.release_hash.outputs.hash }}
+            VERSION=${{ steps.version.outputs.version }}
+            SOURCE_COMMIT=${GITHUB_SHA::7}
       - name: Dump Image Info
         run: |
           echo "Pulling... ${{ inputs.image }}"
@@ -100,3 +116,4 @@ jobs:
           docker inspect --format='{{json .Config.Labels}}' ${{ inputs.image }}
           docker run -t ${{ inputs.image }} release-info.sh
           echo "----------"
+#          image: ${{ steps.setup.outputs.image }}

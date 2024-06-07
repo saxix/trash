@@ -1,4 +1,4 @@
-name: Unit Test
+name: Test
 
 on:
   push:
@@ -60,6 +60,7 @@ jobs:
       image: ${{needs.setup.outputs.image_name}}
       checksum: ${{needs.setup.outputs.hash}}
       target: "python_dev_deps"
+      dry_run: true
 
   test:
     needs: [setup]
@@ -93,9 +94,6 @@ jobs:
             -w /code/app \
             -t ${{needs.setup.outputs.image_name}} \
             pytest tests -v --cov --cov-report xml:coverage.xml
-      - run: echo "$PWD"
-      - run: ls -al .
-      - run: ls -al coverage.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

@@ -109,9 +109,9 @@ ARG CHECKSUM
 ARG VERSION
 ARG BUILD_DATE
 
-LABEL date="$BUILD_DATE"
-LABEL version="$VERSION"
-LABEL checksum="$CHECKSUM"
+LABEL date=$BUILD_DATE
+LABEL version=$VERSION
+LABEL checksum=$CHECKSUM
 
 
 WORKDIR /code
@@ -130,9 +130,9 @@ ARG CHECKSUM
 ARG VERSION
 ARG BUILD_DATE
 
-LABEL date="$BUILD_DATE"
-LABEL version="$VERSION"
-LABEL checksum="$CHECKSUM"
+LABEL date=$BUILD_DATE
+LABEL version=$VERSION
+LABEL checksum=$CHECKSUM
 
 WORKDIR /code
 COPY docker/conf/config.toml /etc/xdg/pdm/config.toml

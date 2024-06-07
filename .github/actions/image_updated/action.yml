@@ -18,10 +18,14 @@ inputs:
   password:
     description: 'DockerHub password '
     required: false
+  architecture:
+    description: 'DockerHub architecture to build '
+    required: false
+    default: amd64
 
 outputs:
   exists:
-    description: 'The time we greeted you'
+    description: 'Returns true if the image exists and the checksum is valid'
     value: ${{ steps.check.outputs.exists }}
 
 runs:
@@ -32,28 +36,69 @@ runs:
       continue-on-error: true
       shell: bash --noprofile --norc -eo pipefail -ux {0}
       run: |
-        set +e
+        trap 'echo "exitcode=$?" >> "$GITHUB_OUTPUT"' EXIT
+        
         ref=${{ inputs.image }}
+        architecture=${{ inputs.architecture }}
         repo="${ref%:*}"
         tag="${ref##*:}"
-        if [ -n "${{ inputs.username }}" ];  then
-          token=$(curl -u "${{ inputs.username }}:${{ inputs.password }}" -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull"       | jq -r '.token')
-        else
-          token=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull" | jq -r '.token')
-          fi
-          digest=$(curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-                        -H "Authorization: Bearer $token" \
-                        -s "https://registry-1.docker.io/v2/${repo}/manifests/${tag}" | jq -r .config.digest)
-          
-          checksum=$(curl -H "Accept: application/vnd.docker.container.image.v1+json" \
-               -H "Authorization: Bearer $token" \
-               -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}" | jq --raw-output '.config.Labels.${{ inputs.label }}' )
-        e="false"
         
-        if [ $checksum = '"${{ inputs.checksum }}"' ];then
-          e="true"
-          echo "Image ${{inputs.image}} found"
-        else
-          echo "Image ${{inputs.image}} does not exist"
+        echo $repo:$tag
+        
+        res=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull")
+        token=$(echo $res | jq -r '.token')
+        
+        if [[ -z "$token" ]];then
+          echo "Unable to get Auth Token"
+          echo $res
+          exit 1
         fi
-        echo "exists=$e" >> "$GITHUB_OUTPUT"
+        
+        manifest=$(curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                      -H "Authorization: Bearer $token" \
+                      -s "https://registry-1.docker.io/v2/${repo}/manifests/${tag}")
+        
+        if [[ -z "$manifest" ]];then
+          echo "Unable to get manifest "
+          exit 1
+        fi
+        check=$(echo $manifest | jq 'try(.manifests[])')
+        
+        if [[ -n "$check" ]]; then
+          echo "Multi platform manifest detected "
+          digest=$(echo $manifest | jq -r ".manifests| map(select(.platform.architecture | contains (\"${architecture}\"))) | .[].digest" 2>&1)
+        else
+          echo "Single platform manifest found "
+          digest=$(echo $manifest | jq -r '.config.digest' 2>&1)
+        fi
+        
+        if [[ -z "$digest" ]];then
+          echo "Unable to get digest "
+          echo $manifest | jq
+          exit 1
+        fi
+        echo  $digest
+        
+        blob=$(curl \
+              --silent \
+              --location \
+              --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+              --header "Authorization: Bearer $token" \
+              "https://registry-1.docker.io/v2/$repo/blobs/$digest")
+        
+        if [[ -z "$blob" ]]; then
+          echo "Unable to get blob from: https://registry-1.docker.io/v2/$repo/blobs/$digest"
+          exit 1
+        fi
+        checksum=$(echo $blob | jq '.config.Labels.checksum')
+        ret='???'
+        if [[ $checksum == null ]]; then
+          echo "Invalid Blob from: https://registry-1.docker.io/v2/$repo/blobs/$digest"
+          ret=false
+        else
+          ret=true
+        fi
+        echo "exists=${ret}" >> "$GITHUB_OUTPUT"
+    - name: Check Image Updatedset results
+      run: |
+        echo 2222, ${{ steps.check.outputs.exitcode }}
