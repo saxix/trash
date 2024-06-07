@@ -97,7 +97,7 @@ runs:
           exit 1
         fi
         checksum=$(echo $blob | jq '.config.Labels.checksum')
-        build_number=$(echo $blob | jq '.config.Labels.build_number')
+        build_number=$(echo $blob | jq '.config.Labels.BuildNumber')
         
         if [[ $build_number == null ]]; then
           build_number=$((build_number+1))

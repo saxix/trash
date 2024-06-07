@@ -104,6 +104,7 @@ jobs:
           image-manifest: true
           cache-from: "type=registry,ref=${{inputs.image}}"
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+          labels: BuildNumber=${{ steps.setup.outputs.build_number }},
           build-args: |
             BUILD_DATE=${{ steps.setup.outputs.date }}
             CHECKSUM=${{ steps.release_hash.outputs.hash }}
