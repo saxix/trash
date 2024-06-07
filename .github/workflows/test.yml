@@ -81,19 +81,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-#    container:
-#      image: ${{needs.setup.outputs.image_name}}
-#      credentials:
-#        username: ${{ secrets.DOCKERHUB_USERNAME }}
-#        password: ${{ secrets.DOCKERHUB_TOKEN }}
-#      ports:
-#        - 8000:8000
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
-#      DATABASE_URL: postgres://postgres:postgres@db:5432/dedupe
-#      SECRET_KEY: secret_key
-#      CACHE_URL: redis://redis:6379/0
-#      CELERY_BROKER_URL: redis://redis:6379/0
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -109,7 +98,7 @@ jobs:
             -v $PWD:/code/app \
             -w /code/app \
             -t ${{needs.setup.outputs.image_name}} \
-            pytest tests -v --cov trash --cov-report xml:/code/app/coverage.xml --cov-config=tests/.coveragerc
+            pytest tests -v 
           ls -al $PWD
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

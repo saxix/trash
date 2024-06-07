@@ -11,3 +11,5 @@ __pycache__
 !.bumpversion.cfg
 !tests/.coveragerc
 pdm.lock
+coverage.xml
+.pdm-python
