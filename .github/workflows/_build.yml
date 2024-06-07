@@ -63,11 +63,22 @@ jobs:
           password: ${{ secrets.password }}
       - id: setup
 #        if: ${{ steps.image_updated.outputs.exists == 'false' || inputs.force }}
+        name: setup
         run: |
           tag="${{ inputs.image }}"
           build_date=$(date +"%Y-%m-%d %H:%M")
           echo "date=$build_date" >> $GITHUB_OUTPUT
           echo "image=${tag%:*}" >> $GITHUB_OUTPUT
+      - name: Setup Environment (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |  
+          echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}
+      - name: Setup Environment (Push)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |  
+          echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
       - run: |
           echo "====================================="
           echo date: ${{steps.setup.outputs.date}}
@@ -100,8 +111,6 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/amd64
           outputs: type=registry
-          enableBuildKit: true
-          image-manifest: true
           cache-from: "type=registry,ref=${{inputs.image}}"
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           labels: BuildNumber=${{ steps.setup.outputs.build_number }},
@@ -109,7 +118,7 @@ jobs:
             BUILD_DATE=${{ steps.setup.outputs.date }}
             CHECKSUM=${{ steps.release_hash.outputs.hash }}
             VERSION=${{ steps.version.outputs.version }}
-            SOURCE_COMMIT=${GITHUB_SHA::7}
+            SOURCE_COMMIT=${LAST_COMMIT_SHA::7}
       - name: Dump Image Info
         run: |
           echo "Pulling... ${{ inputs.image }}"
