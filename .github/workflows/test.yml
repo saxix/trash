@@ -7,9 +7,9 @@ on:
 #      - master
 #      - staging
       - releases/*
-#  pull_request:
-#    branches: [develop, master]
-#    types: [synchronize, opened, reopened, ready_for_review]
+  pull_request:
+    branches: [develop, master]
+    types: [synchronize, opened, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,8 +17,10 @@ concurrency:
 
 jobs:
   setup:
+#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     name: check files
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 3
     outputs:
       test_files: ${{ steps.changes.outputs.run_tests }}
@@ -52,10 +54,14 @@ jobs:
       - name: Define target image name
         id: image_name
         run: |
+          echo ${{github.event_name}}
+          echo ${{github.event.pull_request.head.repo.full_name}} 
+          echo ${{github.event.pull_request.base.repo.full_name}}
           # needs.setup.outputs.version contains the branch name
           echo "name=${{vars.DOCKER_IMAGE}}:test-${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
 
   build:
+#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     uses: ./.github/workflows/_build.yml
     needs: [setup]
     secrets: inherit
@@ -65,8 +71,10 @@ jobs:
       target: "python_dev_deps"
 
   test:
+#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     needs: [build, setup]
-    runs-on: ubuntu-22.04
+#    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     services:
       redis:
         image: redis
@@ -89,7 +97,7 @@ jobs:
       - name: Run tests
         run: |
           ls -al $PWD
-          ls -al tests/.coveragerc
+          touch __PIPPO__
           docker run --rm \
             -e DATABASE_URL=postgres://postgres:postgres@db:5432/dedupe \
             -e SECRET_KEY=secret_key \
@@ -98,7 +106,7 @@ jobs:
             -v $PWD:/code/app \
             -w /code/app \
             -t ${{needs.setup.outputs.image_name}} \
-            pytest tests -v 
+            ls -al
           ls -al $PWD
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
