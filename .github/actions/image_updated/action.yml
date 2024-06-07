@@ -77,7 +77,6 @@ runs:
           echo $manifest | jq
           exit 1
         fi
-        echo  $digest
         
         blob=$(curl \
               --silent \
@@ -100,5 +99,6 @@ runs:
         fi
         echo "exists=${ret}" >> "$GITHUB_OUTPUT"
     - name: Check Image Updatedset results
+      shell: bash --noprofile --norc -eo pipefail -ux {0}
       run: |
         echo 2222, ${{ steps.check.outputs.exitcode }}
