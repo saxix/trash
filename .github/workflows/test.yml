@@ -63,7 +63,6 @@ jobs:
     uses: ./.github/workflows/_build.yml
     needs: [setup]
     secrets: inherit
-    runs-on: [ubuntu-latest, self-hosted]
     with:
       image: ${{needs.setup.outputs.image_name}}
       cache-from: ${{needs.setup.outputs.image_name}}
