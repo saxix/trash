@@ -1,5 +1,5 @@
 # Adds labels to pull requests for the type of change the PR makes
-name: meta(labels)
+name: Adds labels
 
 on:
   pull_request:
