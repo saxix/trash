@@ -83,18 +83,19 @@ jobs:
           echo "LAST_COMMIT_SHA=${GITHUB_SHA::7}" >> ${GITHUB_ENV}
       - run: |
           echo ""
-          echo date         : ${{steps.setup.outputs.date}}
-          echo image        : ${{steps.setup.outputs.image}}
-          echo tag          : ${{inputs.image}}
-          echo target       : ${{inputs.target}}
-          echo checksum     : ${{inputs.checksum}}
-          echo image_exists : ${{steps.image_updated.outputs.exists}}
-          echo image_updated: ${{steps.image_updated.outputs.updated}}
-          echo build_number : ${{steps.image_updated.outputs.build_number}}
-          echo build_date   : ${{steps.image_updated.outputs.build_date}}
-          echo force        : ${{inputs.force}}
-          echo build        : ${{steps.image_updated.outputs.updated != 'true' || inputs.force == 'true'}}
-          echo sha          : ${{env.LAST_COMMIT_SHA}}
+          echo date            : ${{steps.setup.outputs.date}}
+          echo image           : ${{steps.setup.outputs.image}}
+          echo tag             : ${{inputs.image}}
+          echo target          : ${{inputs.target}}
+          echo target-checksum : ${{inputs.checksum}}
+          echo docker-checksum : ${{steps.image_updated.outputs.checksum }}
+          echo image_exists    : ${{steps.image_updated.outputs.exists}}
+          echo image_updated   : ${{steps.image_updated.outputs.updated}}
+          echo build_number    : ${{steps.image_updated.outputs.build_number}}
+          echo build_date      : ${{steps.image_updated.outputs.build_date}}
+          echo force           : ${{inputs.force}}
+          echo build           : ${{steps.image_updated.outputs.updated != 'true' || inputs.force == 'true'}}
+          echo sha             : ${{env.LAST_COMMIT_SHA}}
           echo "====================================="
       - uses: docker/login-action@v3
         with:

@@ -117,6 +117,7 @@ runs:
           echo "Unable to get blob from: https://registry-1.docker.io/v2/$repo/blobs/$digest"
           echo "updated=false" >> "$GITHUB_OUTPUT"
           echo "build_number=1" >> "$GITHUB_OUTPUT"
+          echo "build_date=-" >> "$GITHUB_OUTPUT"        
           echo "::error file={name},line={line},endLine={endLine},title={title}::{message}"
           exit 1
         fi        
