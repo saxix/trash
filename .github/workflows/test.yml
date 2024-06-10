@@ -24,7 +24,7 @@ jobs:
   setup:
 #    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     name: check files
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
       test_files: ${{ steps.changes.outputs.run_tests }}
@@ -72,7 +72,7 @@ jobs:
   test:
 #    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     needs: [build, setup]
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ubuntu-latest
     services:
       redis:
         image: redis
