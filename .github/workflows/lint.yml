@@ -27,12 +27,6 @@ jobs:
     outputs:
       lint: ${{ steps.changes.outputs.lint }}
       docker: ${{ steps.changes.outputs.docker_base }}
-#      python_files: ${{ steps.changes.outputs.python }}
-#      branch: ${{ steps.extract_branch.outputs.branch }}
-#      hash: ${{ steps.release_hash.outputs.hash }}
-#      tags: ${{ steps.meta.outputs.tags }}
-#      version: ${{ steps.meta.outputs.version }}
-#      image_name: ${{ steps.image_name.outputs.name }}
     steps:
       - run: git config --global --add safe.directory $(realpath .)
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -53,6 +47,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+          cache: 'pip'
       - name: Install requirements
         run: pip install flake8 pycodestyle
       - name: Check syntax
@@ -72,6 +67,7 @@ jobs:
           python-version: '3.9'
       - name: Install requirements
         run: pip install isort
+        cache: 'pip'
       - name: iSort
         run: isort src/ --check-only
   bandit:
@@ -83,6 +79,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+          cache: 'pip'
       - name: Install requirements
         run: pip install bandit
       - name: bandit
