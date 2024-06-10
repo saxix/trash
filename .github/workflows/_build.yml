@@ -46,8 +46,6 @@ jobs:
       updated: ${{ steps.image_updated.outputs.exists }}
       image: ${{ steps.setup.outputs.image }}
       built: ${{ steps.release_hash.outputs.hash }}
-    env:
-      DOCKER_DEFAULT_PLATFORM=linux/amd64
     steps:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Checkout code
