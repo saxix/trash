@@ -1,12 +1,12 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - develop
+#  push:
+#    branches:
+#      - develop
 #      - master
 #      - staging
-      - releases/*
+#      - releases/*
   pull_request:
     branches: [develop, master]
     types: [synchronize, opened, reopened, ready_for_review]
