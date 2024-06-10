@@ -12,17 +12,17 @@ python: &python
   - 'manage.py'
 
 docker_base:
-  - added|modified: *docker
+  - *docker
   - *dependencies
 
 run_tests:
-  - added|modified: *python
+  -  *python
   - 'pytest.ini'
 
 migrations:
   - added|modified: 'src/**/migrations/*'
 
 lint:
-  - added|modified: *python
+  -  *python
   - '.flake8'
   - 'pyproject.toml'
