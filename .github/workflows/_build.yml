@@ -40,7 +40,7 @@ defaults:
 jobs:
   builder:
     name: Build Image
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ubuntu-latest
     outputs:
       hash: ${{ steps.release_hash.outputs.hash }}
       updated: ${{ steps.image_updated.outputs.exists }}
