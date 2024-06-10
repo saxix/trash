@@ -104,7 +104,7 @@ jobs:
             -v $PWD:/code/app \
             -w /code/app \
             -t ${{needs.setup.outputs.image_name}} \
-            ls -al
+            pytest tests -v 
           ls -al $PWD
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
