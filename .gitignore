@@ -4,11 +4,13 @@
 dist/
 __pycache__
 .tox
+!.gitignore
 !.github
 !.git
 !.mypy.ini
 !.dockerignore
 !.bumpversion.cfg
+!.flake8
 !tests/.coveragerc
 pdm.lock
 coverage.xml
