@@ -39,7 +39,7 @@ jobs:
       - run: git config --global --add safe.directory $(realpath .)
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - id: changes
-        name: Check for backend file changes
+        name: Check for file changes
         uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd # v3.0.0
         with:
           base: ${{ github.ref }}
