@@ -16,7 +16,7 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install python deps
-        run: pip install -r requirements.txt -r dev-requirements.txt -e.
+        run: pip install towncrier
 
       - name: Check that changelog is updated
         run: towncrier check >> $GITHUB_STEP_SUMMARY
