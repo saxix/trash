@@ -14,22 +14,20 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
+
 jobs:
   setup:
     name: check files
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
     timeout-minutes: 3
     outputs:
-      test_files: ${{ steps.changes.outputs.run_tests }}
-      docker: ${{ steps.changes.outputs.docker_base }}
       python_files: ${{ steps.changes.outputs.python }}
-      branch: ${{ steps.extract_branch.outputs.branch }}
-      hash: ${{ steps.release_hash.outputs.hash }}
-      tags: ${{ steps.meta.outputs.tags }}
-      version: ${{ steps.meta.outputs.version }}
-      image_name: ${{ steps.image_name.outputs.name }}
     steps:
-      - run: git config --global --add safe.directory $(realpath .)
+#      - run: git config --global --add safe.directory $(realpath .)
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - id: changes
         name: Check for backend file changes
@@ -38,20 +36,20 @@ jobs:
           base: ${{ github.ref }}
           token: ${{ github.token }}
           filters: .github/file-filters.yml
-      - id: release_hash
-        uses: ./.github/actions/distro_hash
+#      - id: release_hash
+#        uses: ./.github/actions/distro_hash
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
       - name: Define target image name
         id: image_name
         run: |
-          # needs.setup.outputs.version contains the branch name
           echo "name=${{vars.DOCKER_IMAGE}}:test-${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
 
   mypy:
     needs: [setup]
-    runs-on: ubuntu-22.04
+    if: needs.setup.outputs.python_files
+    runs-on: [ubuntu-latest, self-hosted]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

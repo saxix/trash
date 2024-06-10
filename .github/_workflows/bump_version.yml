@@ -1,38 +1,28 @@
-name: release
+name: Bump version workflow
+
 on:
   push:
     branches:
-      - master
-    tags:
-      - 'v*.*.*'
-  pull_request:
-    types:
-      - labeled
+    - main
 
 jobs:
-  release:
-    if: github.event.action != 'labeled'
-    runs-on: ubuntu-latest
+  bump-version:
+    name: Bump package version
+    if: "!contains(github.event.head_commit.message, 'Bump version')"
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
-
-      # Bump version on merging Pull Requests with specific labels.
-      # (bump:major,bump:minor,bump:patch)
-      - uses: haya14busa/action-bumpr@v1
-        id: bumpr
-        if: "!startsWith(github.ref, 'refs/tags/')"
-
-      # Update corresponding major and minor tag.
-      # e.g. Update v1 and v1.2 when releasing v1.2.3
-      - uses: haya14busa/action-update-semver@v1
-        if: "!steps.bumpr.outputs.skip"
-        with:
-          github_token: ${{ secrets.github_token }}
-          tag: ${{ steps.bumpr.outputs.next_version }}
-  release-check:
-    if: github.event.action == 'labeled'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Post bumpr status comment
-        uses: haya14busa/action-bumpr@v1
+    - name: actions/checkout
+      uses: actions/checkout@v2
+      with:
+          persist-credentials: false
+    - name: current_version
+      run: echo "current_version=$(grep '# version' version.md | cut -d ' ' -f3)" >> $GITHUB_ENV
+    - name: FragileTech/bump-version
+      uses: FragileTech/bump-version@main
+      with:
+        current_version: "${{ env.current_version }}"
+        files: version.md
+        commit_name: Your Company Bot
+        commit_email: bot@your-company.com
+        login: your-bot-login
+        token: "${{ secrets.BOT_TOKEN }}"
