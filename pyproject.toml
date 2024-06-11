@@ -49,6 +49,10 @@ directory = "history"
 package = "trash"
 package_dir = "src"
 
+[tool.isort]
+profile = "hug"
+src_paths = ["isort", "test"]
+
 
 [tool.black]
 line-length = 120
