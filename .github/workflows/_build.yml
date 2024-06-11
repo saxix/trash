@@ -117,7 +117,7 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/amd64
           outputs: type=registry
-          cache-from: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+          cache-from: "type=registry,ref=${{inputs.image}}-buildcache,ref=${{steps.setup.outputs.image}}:test-develop,mode=max"
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           labels: BuildNumber=${{ steps.setup.outputs.build_number }},
           build-args: |

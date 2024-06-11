@@ -46,7 +46,7 @@ jobs:
   flake8:
     needs: changes
     runs-on: ubuntu-latest
-#    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
+    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -63,7 +63,7 @@ jobs:
   isort:
     needs: changes
     runs-on: ubuntu-latest
-#    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
+    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -73,10 +73,23 @@ jobs:
         run: pip install isort
       - name: iSort
         run: isort src/ --check-only
+  black:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install requirements
+        run: pip install black
+      - name: Black
+        run: black src/ --check
   bandit:
     needs: changes
     runs-on: ubuntu-latest
-#    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
+    if: github.event.pull_request.draft == false && steps.changes.outputs.lint
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
