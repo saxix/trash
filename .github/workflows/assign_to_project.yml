@@ -14,7 +14,7 @@ jobs:
   assign_one_project:
     if: vars.DEFAULT_PROJECT
     runs-on: ubuntu-latest
-    name: Assign to One Project
+    name: Assign to Project
     steps:
     - name: Assign NEW issues and NEW pull requests to '${{ vars.DEFAULT_PROJECT }}'
       uses: srggrs/assign-one-project-github-action@1.2.1
