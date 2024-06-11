@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from environ import Env
 from pathlib import Path
+
+from environ import Env
 
 env = Env()
 

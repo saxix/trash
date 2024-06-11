@@ -11,6 +11,7 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "uwsgi>=2.0.26",
     "mypy>=1.10.0",
+    "setuptools>=70.0.0",
 ]
 requires-python = ">=3.12"
 readme = "README.md"
@@ -35,6 +36,7 @@ dev = [
     "flake8>=7.0.0",
     "bandit>=1.7.8",
     "pytest-django>=4.8.0",
+    "pylint>=3.2.3",
 ]
 
 [tool.pdm.build]
@@ -47,3 +49,23 @@ directory = "history"
 package = "trash"
 package_dir = "src"
 
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | snapshots
+)/
+'''
