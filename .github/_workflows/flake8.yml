@@ -1,0 +1,33 @@
+name: Lint Flake8
+on:
+#  push:
+#    branches:
+#      - develop
+#      - master
+#      - staging
+#      - releases/*
+  pull_request:
+    branches: [develop, master]
+    types: [synchronize, opened, reopened, ready_for_review]
+
+
+permissions:
+  contents: read
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install requirements
+        run: pip install flake8 pycodestyle
+      - name: Check syntax
+        # Stop the build if there are Python syntax errors or undefined names
+        run: flake8 src/ --count --statistics --max-line-length=127
+
+      - name: Warnings
+        run: flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --extend-exclude=""

@@ -1,0 +1,25 @@
+# https://github.com/marketplace/actions/trivy-action
+# https://github.com/marketplace/actions/container-scan
+name: Vulnerability Scan
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+
+jobs:
+  scan:
+    name: Daily Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull docker image
+        run: docker pull sample
+
+      - uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: sample
+      -
+        name: Scan for vulnerabilities
+        uses: crazy-max/ghaction-container-scan@v3
+        with:
+          image: user/app:latest

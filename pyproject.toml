@@ -1,22 +1,29 @@
 [project]
 name = "trash"
-version = "0.1.0"
+version = "1.3.1-rc3"
 description = "Default template for PDM package"
 authors = [
     {name = "sax", email = "s.apostolico@gmail.com"},
 ]
-dependencies = []
-requires-python = ">3.12"
+dependencies = [
+    "django>=5.0.6",
+    "django-environ>=0.11.2",
+    "psycopg2-binary>=2.9.9",
+    "uwsgi>=2.0.26",
+    "mypy>=1.10.0",
+    "setuptools>=70.0.0",
+]
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 
 [tool.pdm]
 name = "trash"
-version = "0.32.0"
-description = "description"
-readme = "README.md"
-authors = ["sax <s.apostolico@gmail.com>"]
-distribution = false
+#version = "1.3.1-rc3010101-final"
+#description = "description"
+#readme = "README.md"
+#authors = ["sax <s.apostolico@gmail.com>"]
+distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -28,9 +35,41 @@ dev = [
     "isort>=5.13.2",
     "flake8>=7.0.0",
     "bandit>=1.7.8",
+    "pytest-django>=4.8.0",
+    "pylint>=3.2.3",
 ]
 
 [tool.pdm.build]
 includes = []
 [tool.poetry.dependencies]
 python = "*"
+
+[tool.towncrier]
+directory = "history"
+package = "trash"
+package_dir = "src"
+
+[tool.isort]
+profile = "hug"
+src_paths = ["isort", "test"]
+
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | snapshots
+)/
+'''

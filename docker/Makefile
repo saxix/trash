@@ -35,7 +35,7 @@ sha:
 	@echo ${LOCK_SHA}
 
 .build:
-	docker login -u saxix -p ${DOCKERHUB_TOKEN}
+	@echo  ${DOCKERHUB_TOKEN} | docker login -u saxix --password-stdin
 	cd .. && docker buildx build \
 			--progress=plain \
 			--build-arg BUILDKIT_INLINE_CACHE=1 \
@@ -43,7 +43,6 @@ sha:
 			--build-arg BUILD_DATE="${BUILD_DATE}" \
 			--build-arg CHECKSUM="${LOCK_SHA}" \
 			--build-arg COMMIT="${COMMIT_SHA}" \
-		    --cache-from ${DOCKER_CACHE_IMAGE}:hde-${STAGE}-latest \
 			${EXTRA} \
 			-t "${DOCKER_IMAGE}:${TAG}" \
 			--push \
