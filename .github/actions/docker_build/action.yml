@@ -66,16 +66,14 @@ outputs:
 
 runs:
   using: 'composite'
-  defaults:
-    run:
-      shell: bash
   steps:
     - name: Output Inputs
+      shell: bash
       run: |
         echo "====================================="
         echo "${{ toJSON(inputs) }}"
         echo "====================================="
-    - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+#    - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Checkout code
       uses: actions/checkout@v4
       with:
@@ -159,6 +157,7 @@ runs:
           GITHUB_SERVER_URL=${{ github.server_url }}
           GITHUB_REPOSITORY=${{ github.repository }}
     - name: Dump Image Info
+      shell: bash
       run: |
         echo "Pulling... ${{ inputs.image }}"
         docker pull --platform linux/amd64 ${{ inputs.image }}
