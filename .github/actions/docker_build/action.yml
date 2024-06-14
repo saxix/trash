@@ -82,6 +82,7 @@ runs:
         password: ${{ inputs.password }}
     - id: setup
       name: setup
+      shell: bash
       run: |
         tag="${{ inputs.image }}"
         build_date=$(date +"%Y-%m-%d %H:%M")
@@ -89,14 +90,17 @@ runs:
         echo "image=${tag%:*}" >> $GITHUB_OUTPUT
     - name: Setup Environment (PR)
       if: ${{ github.event_name == 'pull_request' }}
+      shell: bash
       run: |
         SHA=${{ github.event.pull_request.head.sha }}
         echo "LAST_COMMIT_SHA=${SHA::7}" >> ${GITHUB_ENV}
     - name: Setup Environment (Push)
       if: ${{ github.event_name == 'push' }}
+      shell: bash
       run: |
         echo "LAST_COMMIT_SHA=${GITHUB_SHA::7}" >> ${GITHUB_ENV}
-    - run: |
+    - shell: bash
+      run: |
         echo ""
         echo date            : ${{steps.setup.outputs.date}}
         echo image           : ${{steps.setup.outputs.image}}
