@@ -45,14 +45,14 @@ outputs:
     description: 'Returns true if the image exists'
     value: ${{ steps.image_updated.outputs.version }}
   build_number:
-      description: 'Returns build number for the current branch'
-      value: ${{ steps.image_updated.outputs.build_number }}
+    description: 'Returns build number for the current branch'
+    value: ${{ steps.image_updated.outputs.build_number }}
   build_date:
-      description: 'Returns tha image build date'
-      value: ${{ steps.setup.outputs.date }}
+    description: 'Returns tha image build date'
+    value: ${{ steps.setup.outputs.date }}
   commit:
-      description: 'Returns tha image build date'
-      value: ${{ env.LAST_COMMIT_SHA }}
+    description: 'Returns tha image build date'
+    value: ${{ env.LAST_COMMIT_SHA }}
 
 runs:
   using: 'composite'
