@@ -66,6 +66,9 @@ outputs:
 
 runs:
   using: 'composite'
+  defaults:
+    run:
+      shell: bash
   steps:
     - name: Output Inputs
       run: |
