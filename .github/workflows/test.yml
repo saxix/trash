@@ -112,9 +112,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - run: |
+      - name: Dump
+        run: |
           echo "====================================="
-          echo "${{ toJSON(needs.build) }}"
+          echo "${{ toJSON(needs.build.outputs) }}"
           echo "====================================="
       - name: Run tests
         run: |
