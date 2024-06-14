@@ -37,6 +37,9 @@ inputs:
   password:
     description: 'DockerHub password '
     required: false
+  token:
+    description: 'DockerHub password '
+    required: false
 
 
 defaults:
@@ -107,7 +110,7 @@ runs:
     - shell: bash
       run: |
         echo ""
-        echo "job_name        : ${{ github.job }}"
+        echo "run_id          : ${{ github.run_id }}"
         echo "date            : ${{steps.setup.outputs.date}}"
         echo "image           : ${{steps.setup.outputs.image}}"
         echo "tag             : ${{inputs.image}}"

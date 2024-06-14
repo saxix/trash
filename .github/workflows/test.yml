@@ -84,6 +84,7 @@ jobs:
           target: "python_dev_deps"
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
