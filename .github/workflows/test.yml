@@ -57,7 +57,6 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
       - name: set outputs
-        id: meta
         run: echo "version${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
 
   build:
