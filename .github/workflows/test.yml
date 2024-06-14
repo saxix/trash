@@ -39,7 +39,7 @@ jobs:
       version: ${{ steps.meta.outputs.version }}
       image_name: ${{ steps.image_name.outputs.name }}
     steps:
-      - run: git config --global --add safe.directory $(realpath .)
+#      - run: git config --global --add safe.directory $(realpath .)
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - id: changes
         name: Check for file changes
@@ -56,19 +56,22 @@ jobs:
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
-      - name: Define target image name
-        id: image_name
-        run: |
-          echo "name=${{vars.DOCKER_IMAGE}}:test-${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
+      - name: set outputs
+        id: meta
+        run: echo "version${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
+
   build:
 #    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     needs: [setup]
     runs-on: ubuntu-latest
     secrets: inherit
     steps:
-#      - run: git config --global --add safe.directory $(realpath .)
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Define target image name
+        id: image_name
+        run: |
+          echo "name=${{vars.DOCKER_IMAGE}}:test-${{needs.setup.outputs.version}}" >> $GITHUB_OUTPUT
       - id: doit
         uses: ./.github/actions/docker_build
         secrets: inherit
@@ -126,3 +129,25 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
           name: codecov-${{env.GITHUB_REF_NAME}}
+  release:
+#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    needs: [setup, test]
+    runs-on: ubuntu-latest
+    secrets: inherit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Define target image name
+        id: image_name
+        run: |
+          echo "name=${{vars.DOCKER_IMAGE}}:${{needs.setup.outputs.version}}" >> $GITHUB_OUTPUT
+      - id: doit
+        uses: ./.github/actions/docker_build
+        secrets: inherit
+        with:
+          image: ${{needs.setup.outputs.image_name}}
+          cache-from: ${{needs.setup.outputs.image_name}}
+          checksum: ${{needs.setup.outputs.hash}}
+          target: "dist"
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
