@@ -65,6 +65,7 @@ jobs:
     needs: [setup]
     runs-on: ubuntu-latest
     steps:
+      - run: git config --global --add safe.directory $(realpath .)
       - id: doit
         uses: .github/actions/docker_build
         with:
