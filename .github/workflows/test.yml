@@ -67,7 +67,7 @@ jobs:
     steps:
       - run: git config --global --add safe.directory $(realpath .)
       - id: doit
-        uses: .github/actions/docker_build
+        uses: ./.github/actions/docker_build
         with:
           image: ${{needs.setup.outputs.image_name}}
           cache-from: ${{needs.setup.outputs.image_name}}
