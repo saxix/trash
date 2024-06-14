@@ -31,6 +31,13 @@ inputs:
     required: false
     type: boolean
     default: false
+  username:
+    description: 'DockerHub username '
+    required: false
+  password:
+    description: 'DockerHub password '
+    required: false
+
 
 defaults:
   run:
@@ -71,8 +78,8 @@ runs:
       with:
         image: ${{inputs.image}}
         checksum: ${{ steps.release_hash.outputs.hash }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
     - id: setup
       name: setup
       run: |
@@ -107,8 +114,8 @@ runs:
         echo "====================================="
     - uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:

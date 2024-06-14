@@ -64,15 +64,21 @@ jobs:
 #    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     needs: [setup]
     runs-on: ubuntu-latest
+    secrets: inherit
     steps:
-      - run: git config --global --add safe.directory $(realpath .)
+#      - run: git config --global --add safe.directory $(realpath .)
+      - name: Checkout code
+        uses: actions/checkout@v2
       - id: doit
         uses: ./.github/actions/docker_build
+        secrets: inherit
         with:
           image: ${{needs.setup.outputs.image_name}}
           cache-from: ${{needs.setup.outputs.image_name}}
           checksum: ${{needs.setup.outputs.hash}}
           target: "python_dev_deps"
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
   test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
