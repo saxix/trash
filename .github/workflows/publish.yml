@@ -15,7 +15,7 @@ on:
     types: [synchronize, opened, reopened, ready_for_review]
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -50,7 +50,6 @@ jobs:
           filters: .github/file-filters.yml
       - id: extract_branch
         name: Extract branch name
-#        shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
       - id: release_hash
         uses: ./.github/actions/distro_hash
@@ -62,22 +61,19 @@ jobs:
         run: |
           echo "name=${{vars.DOCKER_IMAGE}}:test-${{steps.meta.outputs.version}}" >> $GITHUB_OUTPUT
   build:
-#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    needs: [setup]
-    runs-on: ubuntu-latest
-    steps:
-      - id: build
-        name: Check for file changes
-        uses: ./.github/actions/docker_build
-        with:
-          image: ${{needs.setup.outputs.image_name}}
-          cache-from: ${{needs.setup.outputs.image_name}}
-          checksum: ${{needs.setup.outputs.hash}}
-          target: "python_dev_deps"
-
-  test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    needs: [build, setup]
+    uses: ./.github/workflows/_build.yml
+    needs: [setup]
+    secrets: inherit
+    with:
+      image: ${{needs.setup.outputs.image_name}}
+      cache-from: ${{needs.setup.outputs.image_name}}
+      checksum: ${{needs.setup.outputs.hash}}
+      target: "python_dev_deps"
+
+  publish:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    needs: [build, setup, test]
     runs-on: ubuntu-latest
     services:
       redis:
@@ -121,13 +117,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
           name: codecov-${{env.GITHUB_REF_NAME}}
-  publish:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    uses: ./.github/workflows/_build.yml
-    needs: [setup]
-    secrets: inherit
-    with:
-      image: ${{needs.setup.outputs.image_name}}
-      cache-from: ${{needs.setup.outputs.image_name}}
-      checksum: ${{needs.setup.outputs.hash}}
-      target: "python_dev_deps"
