@@ -64,6 +64,11 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Output Inputs
+      run: |
+        echo "====================================="
+        echo "${{ toJSON(inputs) }}"
+        echo "====================================="
     - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Checkout code
       uses: actions/checkout@v4
@@ -114,7 +119,7 @@ runs:
         echo build_date      : ${{steps.image_updated.outputs.build_date}}
         echo force           : ${{inputs.force}}
         echo build           : ${{steps.image_updated.outputs.updated != 'true' || inputs.force == 'true'}}
-        echo sha             : ${{env.LAST_COMMIT_SHA}}
+        echo commit_sha      : ${{env.LAST_COMMIT_SHA}}
         echo "====================================="
     - uses: docker/login-action@v3
       with:
