@@ -50,7 +50,6 @@ jobs:
           filters: .github/file-filters.yml
       - id: extract_branch
         name: Extract branch name
-#        shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
       - id: release_hash
         uses: ./.github/actions/distro_hash
@@ -121,13 +120,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
           name: codecov-${{env.GITHUB_REF_NAME}}
-  publish:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    uses: ./.github/workflows/_build.yml
-    needs: [setup]
-    secrets: inherit
-    with:
-      image: ${{needs.setup.outputs.image_name}}
-      cache-from: ${{needs.setup.outputs.image_name}}
-      checksum: ${{needs.setup.outputs.hash}}
-      target: "python_dev_deps"
