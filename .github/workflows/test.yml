@@ -87,7 +87,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   test:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+#    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     needs: [build]
     runs-on: ubuntu-latest
     services:
@@ -149,9 +149,9 @@ jobs:
       - id: doit
         uses: ./.github/actions/docker_build
         with:
-          image: ${{needs.setup.outputs.image_name}}
-          cache-from: ${{needs.setup.outputs.image_name}}
+          image: ${{steps.image_name.outputs.name}}
           checksum: ${{needs.setup.outputs.hash}}
           target: "dist"
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
