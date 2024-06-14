@@ -85,6 +85,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: set outputs
+        run: echo "image=${{steps.image_name.outputs.name}}" >> $GITHUB_OUTPUT
 
   test:
 #    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
@@ -119,7 +121,7 @@ jobs:
             --network host \            
             -v $PWD:/code/app \
             -w /code/app \
-            -t ${{needs.build.steps.image_name.outputs.name}} \
+            -t ${{needs.build.outputs.image}} \
             pytest tests -v 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -153,6 +155,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          echo "::notice:: ${{steps.image_name.outputs.name}} pushed to dockerhub"
 
 #    trivy:
 #      runs-on: ubuntu-latest
