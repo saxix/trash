@@ -49,7 +49,7 @@ runs:
         repo="${ref%:*}"
         tag="${ref##*:}"
         
-        echo "::group::"
+        echo "::group:: image-updated"
         echo "::notice:: ==================================="
         echo "::notice:: Image ${{ inputs.image }}"
         echo "::notice:: Arch ${{ inputs.architecture }}"
