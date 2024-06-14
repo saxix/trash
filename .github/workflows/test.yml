@@ -73,7 +73,6 @@ jobs:
           echo "name=${{vars.DOCKER_IMAGE}}:test-${{needs.setup.outputs.version}}" >> $GITHUB_OUTPUT
       - id: doit
         uses: ./.github/actions/docker_build
-        secrets: inherit
         with:
           image: ${{needs.setup.outputs.image_name}}
           cache-from: ${{needs.setup.outputs.image_name}}
@@ -141,7 +140,6 @@ jobs:
           echo "name=${{vars.DOCKER_IMAGE}}:${{needs.setup.outputs.version}}" >> $GITHUB_OUTPUT
       - id: doit
         uses: ./.github/actions/docker_build
-        secrets: inherit
         with:
           image: ${{needs.setup.outputs.image_name}}
           cache-from: ${{needs.setup.outputs.image_name}}
