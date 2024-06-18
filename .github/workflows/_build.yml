@@ -17,6 +17,10 @@ on:
         required: false
         type: string
         default: false
+      version:
+        description: "Docker version"
+        required: true
+        type: string
       target:
         description: "Dockerfile stage to stop to"
         required: true
@@ -72,13 +76,11 @@ jobs:
           echo "image=${tag%:*}" >> $GITHUB_OUTPUT
       - name: Setup Environment (PR)
         if: ${{ github.event_name == 'pull_request' }}
-#        shell: bash
         run: |
           SHA=${{ github.event.pull_request.head.sha }}
           echo "LAST_COMMIT_SHA=${SHA::7}" >> ${GITHUB_ENV}
       - name: Setup Environment (Push)
         if: ${{ github.event_name == 'push' }}
-#        shell: bash
         run: |
           echo "LAST_COMMIT_SHA=${GITHUB_SHA::7}" >> ${GITHUB_ENV}
       - run: |
@@ -87,6 +89,7 @@ jobs:
           echo image           : ${{steps.setup.outputs.image}}
           echo tag             : ${{inputs.image}}
           echo target          : ${{inputs.target}}
+          echo version         : ${{steps.image_updated.outputs.version}}
           echo target-checksum : ${{inputs.checksum}}
           echo docker-checksum : ${{steps.image_updated.outputs.checksum }}
           echo image_exists    : ${{steps.image_updated.outputs.exists}}
@@ -107,8 +110,11 @@ jobs:
           platforms: linux/amd64
           driver: docker-container
           driver-opts: 'image=moby/buildkit:v0.13.2'
+      - if: ${{ steps.image_updated.outputs.updated != 'true' || inputs.force == 'true' }}
+        run: |
+          echo "::warning:: Build docker ${{ inputs.image }} - Checksum: ${{ steps.release_hash.outputs.hash }}"
       - name: Build and push
-        if: ${{ steps.image_updated.outputs.updated != 'true' || inputs.force == 'true' }}
+        if: steps.image_updated.outputs.updated != 'true' || inputs.force == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -117,13 +123,13 @@ jobs:
           file: ./docker/Dockerfile
           platforms: linux/amd64
           outputs: type=registry
-          cache-from: "type=registry,ref=${{inputs.image}}-buildcache,ref=${{steps.setup.outputs.image}}:test-develop,mode=max"
+          cache-from: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
           labels: BuildNumber=${{ steps.setup.outputs.build_number }},
           build-args: |
             BUILD_DATE=${{ steps.setup.outputs.date }}
             CHECKSUM=${{ steps.release_hash.outputs.hash }}
-            VERSION=${{ steps.version.outputs.version }}
+            VERSION=${{ inputs.version }}
             SOURCE_COMMIT=${{ env.LAST_COMMIT_SHA }}
             GITHUB_SERVER_URL=${{ github.server_url }}
             GITHUB_REPOSITORY=${{ github.repository }}

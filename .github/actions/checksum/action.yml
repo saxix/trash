@@ -7,9 +7,9 @@ inputs:
     required: true
     default: "pdm.lock docker/bin/* docker/conf/* docker/Dockerfile"
 outputs:
-  hash: # id of output
+  checksum: # id of output
     description: 'The time we greeted you'
-    value: ${{ steps.calc.outputs.hash }}
+    value: ${{ steps.calc.outputs.checksum }}
 
 runs:
   using: 'composite'
@@ -17,5 +17,6 @@ runs:
     - id: calc
       shell: bash
       run: |
+        set -x
         LOCK_SHA=$(sha1sum ${{ inputs.files }} | sha1sum | awk '{print $1}' | cut -c 1-8)
-        echo "hash=$LOCK_SHA" >> "$GITHUB_OUTPUT"
+        echo "checksum=$LOCK_SHA" >> "$GITHUB_OUTPUT"
