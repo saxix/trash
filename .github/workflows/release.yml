@@ -9,33 +9,34 @@ permissions:
   contents: write
 
 jobs:
-  runs-on: ubuntu-latest
-  timeout-minutes: 1
-  defaults:
-    run:
-      shell: bash
-  steps:
-    - uses: actions/checkout@v4
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Docker Hub Description
-      uses: peter-evans/dockerhub-description@v4
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        short-description: {{ github.event.repository.description }}  # "Hope Deduplication Engine"
-    - name: Docker image promote
-      uses: cloudposse/github-action-docker-promote@main
-      id: promote
-      with:
-        image_name: ${{ vars.DOCKER_IMAGE }}
-        registry: registry.hub.docker.com
-        organization: 'unicef'
-        repository: ${{ github.event.repository.name }}
-        from: ${{ github.event.release.tag_name }}
-        to: ${{ github.event.release.id }}
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          short-description: ${{ github.event.repository.description }}  # "Hope Deduplication Engine"
+      - name: Docker image promote
+        uses: cloudposse/github-action-docker-promote@main
+        id: promote
+        with:
+          image_name: ${{ vars.DOCKER_IMAGE }}
+          registry: registry.hub.docker.com
+          organization: 'unicef'
+          repository: ${{ github.event.repository.name }}
+          from: ${{ github.event.release.tag_name }}
+          to: ${{ github.event.release.id }}
 
-#        login: ${{ secrets.DOCKERHUB_USERNAME }}
-#        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-#        from: sha-${{ github.sha }}
-#        to: ${{ github.event.release.tag_name }}
-#        use_metadata: false
+  #        login: ${{ secrets.DOCKERHUB_USERNAME }}
+  #        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #        from: sha-${{ github.sha }}
+  #        to: ${{ github.event.release.tag_name }}
+  #        use_metadata: false
