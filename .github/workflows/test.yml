@@ -33,24 +33,11 @@ jobs:
         shell: bash
     outputs:
       checksum: ${{ steps.checksum.outputs.checksum }}
-      test_image_name: ${{ steps.image_name.outputs.name }}
-      test_image_date: ${{ steps.meta.outputs.build_date }}
-      test_image_build_number: ${{ steps.meta.outputs.build_number }}
-      test_image_checksum: ${{ steps.meta.outputs.checksum }}
-      test_image_updated: ${{ steps.meta.outputs.updated }}
       version: ${{ steps.meta.outputs.version }}
-#      last_commit: ${{ steps.env.outputs.last_commit }}
-#      branch: ${{ steps.env.outputs.branch }}
-#      date: ${{ steps.env.outputs.date }}
-#      dist_image: ${{ steps.env.outputs.dist_image }}
-#      docker: ${{ steps.changes.outputs.docker_base }}
       run_tests: ${{ steps.changes.outputs.run_tests }}
-#      tags: ${{ steps.meta.outputs.tags }}
-#      tag: ${{ steps.meta.outputs.version }}
-#      image_name: ${{ steps.image_name.outputs.name }}
     steps:
-#      - run: git config --global --add safe.directory $(realpath .)
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout code
+        uses: actions/checkout@v4
       - id: changes
         name: Check for file changes
         uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd # v3.0.0
@@ -58,66 +45,46 @@ jobs:
           base: ${{ github.ref }}
           token: ${{ github.token }}
           filters: .github/file-filters.yml
-      - id: checksum
-        name: Calculate Code Checksum
-        uses: ./.github/actions/checksum
-      - id: image_name
-        name: Set Image name
-        run: |
-          branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          ver="${branch/\//-}"
-          echo "name=${{vars.DOCKER_IMAGE}}:test-$ver" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
+      - name: Prepare Build Args
+        id: build_args
+        uses: ./.github/actions/build_args
         with:
-          images: ${{vars.DOCKER_IMAGE}}
-          tags: |
-            type=ref,event=branch
-#            type=ref,event=pr
-#            type=semver,pattern={{version}}
-#            type=semver,pattern={{major}}.{{minor}}
-#            type=sha
+          debug: true
       - shell: bash
         run: |
           echo "==="
-          echo '${{ toJSON(steps.meta.outputs) }}' | jq
-#
-#
-#      - name: Image meta
-#        id: meta
-#        uses: ./.github/actions/image_meta
-#        with:
-#          image: ${{steps.image_name.outputs.name}}
-#          checksum: ${{steps.checksum.outputs.checksum}}
-#          username: ${{ inputs.username }}
-#          password: ${{ inputs.password }}
-#          debug: true
-#
-#  build:
-#    name: Build and Push Test Image
-#    needs: [setup]
-#    if: needs.setup.outputs.updated != 'true'
-#    #  && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name)
-#    runs-on: ubuntu-latest
-#    defaults:
-#      run:
-#        shell: bash
-#    outputs:
-#      image: ${{ needs.setup.outputs.test_image_name }}
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#      - id: doit
-#        uses: ./.github/actions/docker_build
-#        with:
-#          image: ${{needs.setup.outputs.test_image_name}}
-#          checksum: ${{needs.setup.outputs.checksum}}
-#          target: "python_dev_deps"
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#
+          echo '${{ toJSON(steps.build_args.outputs) }}' | jq
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        id: build_push
+        with:
+          context: .
+          tags: ${{ steps.meta.outputs.tags }}
+          target: ${{ inputs.target }}
+          file: ./docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: |
+              BUILD_DATE=${{ steps.build_args.outputs.build_date }}
+              CHECKSUM=${{ steps.build_args.outputs.checksum }}
+              VERSION=${{ steps.meta.outputs.versio }}
+              SOURCE_COMMIT=${{ steps.build_args.outputs.source_commit }}
+              GITHUB_SERVER_URL=${{ github.server_url }}
+              GITHUB_REPOSITORY=${{ github.repository }}
+      - name: Push Blob to Registry
+        shell: bash
+        run: |
+          docker 
+
+  #        outputs: type=registry
+  #        cache-from: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+  #        cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+  #        provenance: true
+  #        sbom: true
+  #        load: true#
 #  test:
 #    name: Run Test Suite
 #    needs: [setup,build]
