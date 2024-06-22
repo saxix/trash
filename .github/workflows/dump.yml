@@ -61,16 +61,7 @@ jobs:
               echo "::warning:: UNKNOWN target $target_branch - Do NOT create TAG"
           fi            
           echo "::notice:: TAG       ${TAG}"
-
-#          if [[ $message == *"ci:tag="* ]]"; then
-#            TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
-#          if [[ "$target_branch" == "master" ]];then
-#            if [[ "$message" == "true" ]];then
-#              TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
-#            fi
-
           echo "::endgroup::"
-
       - name: Dump Env vars
         run: |
             echo "====== ENVIRONMENT ================="
