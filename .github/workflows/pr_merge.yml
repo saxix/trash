@@ -41,8 +41,8 @@ jobs:
         with:
           title: "Backport Master to Develop"
           commit-message: "Backport Master to Develop"
-          author: ${{ github.actor }}
-          assignees: ${{ github.actor }}
+#          author: ${{ github.actor }}
+#          assignees: ${{ github.actor }}
       - name: Create or Update Project Card
         if: ${{ steps.cpr.outputs.pull-request-number }}
         uses: peter-evans/create-or-update-project-card@v2
