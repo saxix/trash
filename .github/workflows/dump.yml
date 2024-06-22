@@ -1,38 +1,99 @@
-name: Dump Env vars
+name: "[DEBUG] Dump"
 
 on:
+  check_run:
+  create:
+  delete:
+  discussion:
+  discussion_comment:
+  fork:
+  issues:
+  issue_comment:
+  milestone:
   pull_request:
-    types:
-      - closed
+  pull_request_review_comment:
+  pull_request_review:
+  push:
+  release:
+  workflow_dispatch:
+
 
 jobs:
-  one:
-    runs-on: ubuntu-latest
+  dump:
+    name: "[DEBUG] Echo Full Context"
+#    if: ${{ contains(github.event.head_commit.message, 'ci:debug') }}
+    runs-on: self-hosted
     steps:
-      - name: Dump Env vars
-        run: env | sort
+      - name: Echo
+        run: |
+          echo "::group:: "
+          echo "::notice:: github.event_name:                  ${{github.event_name}}"
+          echo "::notice:: github.run_id:                      ${{github.run_id}}"
+          echo "::notice:: github.run_number:                  ${{github.run_number}}"
+          echo "::notice:: github.event.action                 ${{github.event.action}}"
+          echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
+          echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
+          echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+          echo "::endgroup::"
 
+      - name: Dump Env vars
+        run: |
+            echo "====== ENVIRONMENT ================="
+            env | sort
+            echo "===================================="
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
+        run: |
+            echo "====== GITHUB_CONTEXT =============="
+            echo "$GITHUB_CONTEXT"
+            echo "===================================="
       - name: Dump job context
         env:
           JOB_CONTEXT: ${{ toJSON(job) }}
-        run: echo "$JOB_CONTEXT"
+        run: |
+          echo "====== JOB_CONTEXT =============="
+          echo "$JOB_CONTEXT"
+          echo "===================================="
       - name: Dump steps context
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
-        run: echo "$STEPS_CONTEXT"
+        run: |
+          echo "====== STEPS_CONTEXT =============="
+          echo "$STEPS_CONTEXT"
+          echo "===================================="
       - name: Dump runner context
         env:
           RUNNER_CONTEXT: ${{ toJSON(runner) }}
-        run: echo "$RUNNER_CONTEXT"
+        run: |
+          echo "====== RUNNER_CONTEXT =============="
+          echo "$RUNNER_CONTEXT"
+          echo "===================================="
       - name: Dump strategy context
         env:
           STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
+        run: |
+          echo "====== STRATEGY_CONTEXT =============="
+          echo "$STRATEGY_CONTEXT"
+          echo "===================================="
       - name: Dump matrix context
         env:
           MATRIX_CONTEXT: ${{ toJSON(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+        run: |
+          echo "====== MATRIX_CONTEXT =============="
+          echo "$MATRIX_CONTEXT"
+          echo "===================================="
+      - name: Dump vars context
+        env:
+          VARS_CONTEXT: ${{ toJSON(vars) }}
+        run: |
+          echo "====== VARS =============="
+          echo "$VARS_CONTEXT"
+          echo "===================================="
+      - name: Dump env context
+        env:
+          ENV_CONTEXT: ${{ toJSON(env) }}
+        run: |
+          echo "====== ENV =============="
+          echo "$ENV_CONTEXT"
+          echo "===================================="

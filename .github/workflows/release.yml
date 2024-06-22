@@ -1,51 +1,89 @@
-name: Release
+name: "[DEBUG] Dump"
+
 on:
-  pull_request:
-    types:
-      - closed
+  release:
+     types: [published]
+  workflow_dispatch:
+
 
 jobs:
-  create_tag:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+  dump:
+    name: "[DEBUG] Echo Full Context"
+#    if: ${{ contains(github.event.head_commit.message, 'ci:debug') }}
+    runs-on: self-hosted
     steps:
-      - name: Set tag version
+      - name: Echo
         run: |
-          echo TAG_VERSION=${GITHUB_HEAD_REF##*\/} >> $GITHUB_ENV
+          echo "::group:: "
+          echo "::notice:: github.event_name:                  ${{github.event_name}}" # es. release
+          echo "::notice:: github.run_id:                      ${{github.run_id}}"
+          echo "::notice:: github.run_number:                  ${{github.run_number}}"
+          echo "::notice:: github.event.action                 ${{github.event.action}}"  # es. deleted
+          echo "::notice:: github.event.release.draft          ${{github.event.release.draft}}"
+          echo "::notice:: github.event.release.prerelease     ${{github.event.release.prerelease}}"
+          echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
+          echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
+          echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+          echo "::endgroup::"
 
-      - name: Create Tag
-        uses: negz/create-tag@v1
-        with:
-          version: ${{ env.TAG_VERSION }}
-          message: "Release ${{env.TAG_VERSION}}"
-          token: ${{ github.token }}
-
-      - uses: Logerfo/gitflow-action@0.0.4
-        with:
-          github-token: ${{ github.token }} # The `GITHUB_TOKEN` secret.
-          release: release # The `release` branch.
-          dev: develop # The `dev` branch.
-          master: master # The `master` branch.
-#          label: gitflow # The pull request label.
-#          auto-merge: pull_request_review # If `true`, will try to automatically merge pull requests. Can also be set to `pull_request_review`, `check_run`, `push`, or a comma-separated combination of these values to only merge when handling the named events.
-          require-merge: true # If an attempted merge fails, the action is considered to have failed.
-
-      - name: Merge to develop
-        uses: devmasx/merge-branch@v1.3.1
-        with:
-          type: now
-          from_branch: master
-          target_branch: develop
-          github_token: ${{ github.token }}
-
-  delete_merged_release_branche:
-#    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Delete merged branch
-        uses: dawidd6/action-delete-branch@v3
-        with:
-          github_token: ${{github.token}}
-          numbers: ${{github.event.pull_request.number}}
+      - name: Dump Env vars
+        run: |
+            echo "====== ENVIRONMENT ================="
+            env | sort
+            echo "===================================="
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+            echo "====== GITHUB_CONTEXT =============="
+            echo "$GITHUB_CONTEXT"
+            echo "===================================="
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJSON(job) }}
+        run: |
+          echo "====== JOB_CONTEXT =============="
+          echo "$JOB_CONTEXT"
+          echo "===================================="
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJSON(steps) }}
+        run: |
+          echo "====== STEPS_CONTEXT =============="
+          echo "$STEPS_CONTEXT"
+          echo "===================================="
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+        run: |
+          echo "====== RUNNER_CONTEXT =============="
+          echo "$RUNNER_CONTEXT"
+          echo "===================================="
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
+        run: |
+          echo "====== STRATEGY_CONTEXT =============="
+          echo "$STRATEGY_CONTEXT"
+          echo "===================================="
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+        run: |
+          echo "====== MATRIX_CONTEXT =============="
+          echo "$MATRIX_CONTEXT"
+          echo "===================================="
+      - name: Dump vars context
+        env:
+          VARS_CONTEXT: ${{ toJSON(vars) }}
+        run: |
+          echo "====== VARS =============="
+          echo "$VARS_CONTEXT"
+          echo "===================================="
+      - name: Dump env context
+        env:
+          ENV_CONTEXT: ${{ toJSON(env) }}
+        run: |
+          echo "====== ENV =============="
+          echo "$ENV_CONTEXT"
+          echo "===================================="

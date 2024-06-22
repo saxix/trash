@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
 
+
 def test_dummy():
-    assert True
+    from django.conf import settings
+    import django
+    settings.configure()
+    assert settings.configured
+    django.setup()

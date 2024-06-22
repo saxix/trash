@@ -1,0 +1,148 @@
+# ref: https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action
+name: 'Docker build'
+description: 'Calculate deps and os hash'
+inputs:
+  image:
+    description: "Image name to build and push"
+    required: true
+    type: string
+    default: false
+  cache-from:
+    description: "Image name to build and push"
+    required: false
+    type: string
+  checksum:
+    description: "Dependencies checksum to check to evaluate build"
+    required: false
+    type: string
+    default: false
+  target:
+    description: "Dockerfile stage to stop to"
+    required: true
+    type: string
+    default: "-"
+  force:
+    description: "Force rebuild event is checksum matches"
+    required: false
+    type: boolean
+    default: false
+  dry_run:
+    description: "Force rebuild event is checksum matches"
+    required: false
+    type: boolean
+    default: false
+  username:
+    description: 'DockerHub username '
+    required: false
+  password:
+    description: 'DockerHub password '
+    required: false
+  token:
+    description: 'DockerHub password '
+    required: false
+
+
+defaults:
+  run:
+    shell: bash
+
+
+outputs:
+  checksum:
+    description: 'Returns true if the image exists and the checksum is valid'
+    value: ${{ steps.build_args.outputs.CHECKSUM}}
+  image:
+    description: 'Returns true if the image exists'
+    value: ${{ inputs.image }}
+  version:
+    description: 'Returns build number for the current branch'
+    value: ${{ steps.build_args.outputs.VERSION }}
+  build_date:
+    description: 'Returns tha image build date'
+    value: ${{ steps.build_args.outputs.BUILD_DATE }}
+  commit:
+    description: 'Returns tha image commit sha'
+    value: ${{ steps.build_args.outputs.SOURCE_COMMIT }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Prepare Build Args
+      id: build_args
+      uses: ./.github/actions/build_args
+      with:
+        debug: true
+    - name: DockerHub login
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64
+        driver: docker-container
+        driver-opts: |
+          image=moby/buildkit:v0.13.2
+          network=host
+#    -
+#      name: Build
+#      shell: bash
+#      run: |
+#          ls -al
+#          docker buildx build \
+#            --progress=plain \
+#            --sbom=true \
+#            --provenance=true \
+#            --push \
+#            --platform=linux/amd64 \
+#            --build-arg BUILD_DATE="${{ steps.build_args.outputs.BUILD_DATE }}" \
+#            --build-arg CHECKSUM=${{ steps.build_args.outputs.CHECKSUM }} \
+#            --build-arg VERSION=${{ steps.build_args.outputs.VERSION }} \
+#            --build-arg SOURCE_COMMIT=${{ steps.build_args.outputs.SOURCE_COMMIT }} \
+#            --build-arg GITHUB_SERVER_URL=${{ github.server_url }} \
+#            --build-arg GITHUB_REPOSITORY=${{ github.repository }} \
+#            --cache-from "type=registry,ref=${{inputs.image}}-buildcache,mode=max" \
+#            --cache-to "type=registry,ref=${{inputs.image}}-buildcache,mode=max" \
+#            -o type=registry \
+#            -t ${{ inputs.image }} \
+#            -f docker/Dockerfile \
+#            .
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      id: build_push
+      with:
+        context: .
+        tags: ${{ inputs.image }}
+        target: ${{ inputs.target }}
+        file: ./docker/Dockerfile
+        platforms: linux/amd64
+        push: true
+        build-args: |
+            BUILD_DATE=${{ steps.build_args.outputs.BUILD_DATE }}
+            CHECKSUM=${{ steps.build_args.outputs.CHECKSUM }}
+            VERSION=${{ steps.build_args.outputs.VERSION }}
+            SOURCE_COMMIT=${{ steps.build_args.outputs.SOURCE_COMMIT }}
+            GITHUB_SERVER_URL=${{ github.server_url }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+#        outputs: type=registry
+#        cache-from: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+#        cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
+#        provenance: true
+#        sbom: true
+#        load: true
+    -
+      shell: bash
+      run: echo "======  ${{ toJson(steps.build_push.outputs) }} ==="
+    - name: Dump Image Info
+      shell: bash
+      run: |
+        docker pull --platform linux/amd64 ${{ inputs.image }}
+        info=$(docker inspect --format='{{json .Config.Labels}}' ${{ inputs.image }})
+        release=$(docker run --platform linux/amd64 -t ${{ inputs.image }} release-info.sh)
+        echo "::group:: ✅ Successfully built and pushed ${{ inputs.image }}"
+        echo "::notice:: ${{steps.build_push.outputs.metadata}}"
+        echo "::notice:: $info"
+        echo "::notice:: $release"
+        echo "::endgroup::"
