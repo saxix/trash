@@ -24,9 +24,15 @@ jobs:
 #    if: ${{ contains(github.event.head_commit.message, 'ci:debug') }}
     runs-on: self-hosted
     steps:
-      - name:
+      - name: Echo
         run: |
-          echo "::notice:: ${{github.event.event_name}}"
+          echo "::notice:: github.event.run_id:                ${{github.event.run_id}}"
+          echo "::notice:: github.event.run_number:            ${{github.event.run_number}}"
+          echo "::notice:: github.event.action                 ${{github.event.action}}"
+          echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
+          echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
+          echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+
       - name: Dump Env vars
         run: |
             echo "====== ENVIRONMENT ================="
