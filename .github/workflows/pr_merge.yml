@@ -30,8 +30,9 @@ jobs:
           echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
-          if [[ "${{contains(github.event.head_commit.message, 'ci:tag=')}}" == "true" ]];then
-            TAG=$(echo "ci:tag=1.0rc1" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
+          message="${{contains(github.event.head_commit.message, 'ci:tag=')}}"
+          if [[ "$message" == "true" ]];then
+            TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
           fi
           echo "::endgroup::"
       - name: Create Pull Request
@@ -53,3 +54,6 @@ jobs:
         uses: rickstaa/action-create-tag@v1.7.2
         with:
           tag: ${{ env.TAG }}
+      - name: Echo
+        run: |
+            exit 1
