@@ -8,10 +8,6 @@ inputs:
   checksum:
     description: 'checksum'
     required: true
-  label:
-    description: 'checksum label'
-    default: 'checksum'
-    required: false
   username:
     description: 'DockerHub username '
     required: false
@@ -48,7 +44,16 @@ runs:
         architecture=${{ inputs.architecture }}
         repo="${ref%:*}"
         tag="${ref##*:}"
-
+        
+        echo "::group:: image-updated"
+        echo "::notice:: ==================================="
+        echo "::notice:: Image ${{ inputs.image }}"
+        echo "::notice:: Arch ${{ inputs.architecture }}"
+        echo "::notice:: Repo ${repo}"
+        echo "::notice:: Tag ${tag}"
+        echo "::notice:: ==================================="
+        echo "::endgroup::"
+        
         res=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull")
         token=$(echo $res | jq -r '.token')
         if [[ -z "$token" ]];then

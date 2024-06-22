@@ -11,6 +11,14 @@ python: &python
   - added|modified: 'tests/**'
   - 'manage.py'
 
+changelog:
+  - added|modified: 'changes/**'
+  - 'CHANGELOG.md'
+
+mypy:
+  - *python
+  - 'mypy.ini'
+
 docker_base:
   - *docker
   - *dependencies

@@ -14,8 +14,11 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - id: checksum
+      uses: ./.github/actions/checksum
+    - id: commit
+      uses: ./.github/actions/last_commit
     - id: calc
       shell: bash
       run: |
-        LOCK_SHA=$(sha1sum ${{ inputs.files }} | sha1sum | awk '{print $1}' | cut -c 1-8)
-        echo "hash=$LOCK_SHA" >> "$GITHUB_OUTPUT"
+        labels="BuildNumber=${{ steps.setup.outputs.build_number }}"
