@@ -6,40 +6,27 @@ inputs:
     description: "Image name to build and push"
     required: true
     type: string
-    default: false
-  cache-from:
-    description: "Image name to build and push"
-    required: false
-    type: string
-  checksum:
-    description: "Dependencies checksum to check to evaluate build"
-    required: false
-    type: string
-    default: false
+    default: ${{ github.repository }}
   target:
-    description: "Dockerfile stage to stop to"
-    required: true
+    description: "Target Dockerfile Stage"
     type: string
-    default: "-"
-  force:
-    description: "Force rebuild event is checksum matches"
-    required: false
-    type: boolean
-    default: false
-  dry_run:
-    description: "Force rebuild event is checksum matches"
-    required: false
-    type: boolean
-    default: false
   username:
     description: 'DockerHub username '
     required: false
   password:
     description: 'DockerHub password '
     required: false
-  token:
-    description: 'DockerHub password '
+  code_checksum:
+    description: 'Current codde checksum'
     required: false
+  rebuild:
+    description: 'Always rebuild image, Ignore checksum'
+    required: false
+    default: false
+  dryrun:
+    description: 'Dryrun build'
+    required: false
+    default: 'false'
 
 
 defaults:
@@ -48,101 +35,159 @@ defaults:
 
 
 outputs:
-  checksum:
-    description: 'Returns true if the image exists and the checksum is valid'
-    value: ${{ steps.build_args.outputs.CHECKSUM}}
   image:
-    description: 'Returns true if the image exists'
-    value: ${{ inputs.image }}
+    description: 'Built image name'
+    value: ${{ steps.image_name.outputs.name }}
   version:
-    description: 'Returns build number for the current branch'
-    value: ${{ steps.build_args.outputs.VERSION }}
-  build_date:
-    description: 'Returns tha image build date'
-    value: ${{ steps.build_args.outputs.BUILD_DATE }}
-  commit:
-    description: 'Returns tha image commit sha'
-    value: ${{ steps.build_args.outputs.SOURCE_COMMIT }}
+    description: 'Built image version'
+    value: ${{ steps.meta.outputs.version }}
+  created:
+    description: 'True if new image has been created'
+    value: ${{ steps.status.outputs.created }}
+  digest:
+    description: 'Built image digest'
+    value: ${{ steps.build_push.outputs.digest }}
+  imageId:
+    description: 'Built image ID'
+    value: ${{ steps.build_push.outputs.imageId }}
+
 
 runs:
   using: 'composite'
   steps:
-    - name: Prepare Build Args
-      id: build_args
-      uses: ./.github/actions/build_args
+
+    - name: Restore cached regclient
+      id: cache-regclient-restore
+      uses: actions/cache/restore@v4
       with:
-        debug: true
+        path: $HOME/.regctl
+        key: ${{ runner.os }}-regclient
+    - name: Install regctl
+      if: steps.cache-regclient.outputs.cache-hit != 'true'
+      uses: regclient/actions/regctl-installer@main
+    - name: Cache regclient
+      id: cache-regclient-save
+      uses: actions/cache/save@v4
+      with:
+        path: $HOME/.regctl
+        key: ${{ runner.os }}-regclient
+
     - name: DockerHub login
       uses: docker/login-action@v3
       with:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
-    -
-      name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    - id: checksum
+      uses: ./.github/actions/checksum
+
+    - shell: bash
+      run: |
+        build_date=$(date +"%Y-%m-%d %H:%M")
+        echo "BUILD_DATE=$build_date" >> $GITHUB_ENV
+        
+        if [[ "${{inputs.target}}" == "dist" ]]; then
+          echo "TAG_PREFIX=" >> $GITHUB_ENV
+        else
+          echo "TAG_PREFIX=test-" >> $GITHUB_ENV
+        fi
+    - id: last_commit
+      uses: ./.github/actions/last_commit
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5.5.1
+      with:
+        images: ${{ inputs.image }}
+        flavor: |
+          prefix=${{env.TAG_PREFIX}}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr,prefix=${{env.TAG_PREFIX}}pr
+      env:
+        DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+    - name: "Image Name"
+      shell: bash
+      id: image_name
+      run: |
+          echo "name=${{ inputs.image }}:${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "test_name=${{ inputs.image }}:test-${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
+    - name: "Check Image"
+      id: image_status//
+      shell: bash
+      run: | 
+        set +e
+        echo "::notice::ℹ Checking checksum for ${{ steps.image_name.outputs.name }}"
+        image_checksum=$(regctl image inspect \
+                          -p linux/amd64 \
+                          --format '{{index .Config.Labels "checksum"}}' \
+                          -v fatal \
+                          ${{ steps.image_name.outputs.name }} 2>/dev/null)
+        code_checksum="${{ inputs.code_checksum }}"
+
+        if [[ -z "$image_checksum"  ]]; then
+          echo "::warning::🤔 No image checksum found"
+          echo "updated=false" >> $GITHUB_OUTPUT
+        elif [[ $image_checksum == $code_checksum ]]; then
+          echo "::notice::😀 Image is updated"
+          echo "updated=true" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::🤬 Checksum: found '${image_checksum}' expected '${code_checksum}'"
+          echo "updated=false" >> $GITHUB_OUTPUT
+        fi
+        if [[ "${{inputs.rebuild}}" == "true" ]]; then 
+            echo "::warning::⚠ Forced build due input parameter"
+        fi
+    - name: Set up Docker BuildX
+      if: steps.image_status.outputs.updated != 'true' || inputs.rebuild == 'true'
+      uses: docker/setup-buildx-action@v3.3.0
       with:
         platforms: linux/amd64
         driver: docker-container
         driver-opts: |
           image=moby/buildkit:v0.13.2
           network=host
-#    -
-#      name: Build
-#      shell: bash
-#      run: |
-#          ls -al
-#          docker buildx build \
-#            --progress=plain \
-#            --sbom=true \
-#            --provenance=true \
-#            --push \
-#            --platform=linux/amd64 \
-#            --build-arg BUILD_DATE="${{ steps.build_args.outputs.BUILD_DATE }}" \
-#            --build-arg CHECKSUM=${{ steps.build_args.outputs.CHECKSUM }} \
-#            --build-arg VERSION=${{ steps.build_args.outputs.VERSION }} \
-#            --build-arg SOURCE_COMMIT=${{ steps.build_args.outputs.SOURCE_COMMIT }} \
-#            --build-arg GITHUB_SERVER_URL=${{ github.server_url }} \
-#            --build-arg GITHUB_REPOSITORY=${{ github.repository }} \
-#            --cache-from "type=registry,ref=${{inputs.image}}-buildcache,mode=max" \
-#            --cache-to "type=registry,ref=${{inputs.image}}-buildcache,mode=max" \
-#            -o type=registry \
-#            -t ${{ inputs.image }} \
-#            -f docker/Dockerfile \
-#            .
     - name: Build and push
-      uses: docker/build-push-action@v6
+      if: (steps.image_status.outputs.updated != 'true' || inputs.rebuild == 'true') && inputs.dryrun == 'true'
+      shell: bash
+      run: |
+        echo "::notice:: Dryrun build of ${{ steps.meta.outputs.tags }}"
+        echo "Building image ${{ steps.meta.outputs.tags }}"
+        echo "    TAG_PREFIX ${{ env.TAG_PREFIX }}"
+        echo "        target ${{ inputs.target }}"
+        echo "      checksum ${{ inputs.code_checksum }}"
+        echo "       version ${{ steps.meta.outputs.version }}"
+        echo "        commit ${{ steps.last_commit.outputs.last_commit_short_sha }}"
+
+    - name: Build and push
+      if: (steps.image_status.outputs.updated != 'true' || inputs.rebuild == 'true') && inputs.dryrun != 'true'
       id: build_push
+      uses: docker/build-push-action@v6
       with:
         context: .
-        tags: ${{ inputs.image }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: "${{ steps.meta.outputs.labels }}\nchecksum=${{ inputs.code_checksum }}\ndistro=${{ inputs.target }}"
+        annotations: "${{ steps.meta.outputs.annotations }}\nchecksum=${{ inputs.code_checksum }}\ndistro=${{ inputs.target }}"
         target: ${{ inputs.target }}
         file: ./docker/Dockerfile
         platforms: linux/amd64
         push: true
+        sbom: true
+        provenance: true
+        cache-from: type=registry,ref=${{ steps.image_name.outputs.name }}-cache,ref=${{ steps.image_name.outputs.test_name }}-cache
+        cache-to: type=registry,ref=${{ steps.image_name.outputs.name }}-cache,mode=max,image-manifest=true
         build-args: |
-            BUILD_DATE=${{ steps.build_args.outputs.BUILD_DATE }}
-            CHECKSUM=${{ steps.build_args.outputs.CHECKSUM }}
-            VERSION=${{ steps.build_args.outputs.VERSION }}
-            SOURCE_COMMIT=${{ steps.build_args.outputs.SOURCE_COMMIT }}
             GITHUB_SERVER_URL=${{ github.server_url }}
             GITHUB_REPOSITORY=${{ github.repository }}
-#        outputs: type=registry
-#        cache-from: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
-#        cache-to: "type=registry,ref=${{inputs.image}}-buildcache,mode=max"
-#        provenance: true
-#        sbom: true
-#        load: true
-    -
-      shell: bash
-      run: echo "======  ${{ toJson(steps.build_push.outputs) }} ==="
-    - name: Dump Image Info
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            DISTRO=${{ inputs.target }}
+            CHECKSUM=${{ inputs.code_checksum }}
+            VERSION=${{ steps.meta.outputs.version }}
+            SOURCE_COMMIT=${{ steps.last_commit.outputs.last_commit_short_sha }}
+    - name: Status
+      id: status
+      if: (steps.image_status.outputs.updated != 'true' || inputs.rebuild == 'true') && inputs.dryrun != 'true'
       shell: bash
       run: |
-        docker pull --platform linux/amd64 ${{ inputs.image }}
-        info=$(docker inspect --format='{{json .Config.Labels}}' ${{ inputs.image }})
-        release=$(docker run --platform linux/amd64 -t ${{ inputs.image }} release-info.sh)
-        echo "::group:: ✅ Successfully built and pushed ${{ inputs.image }}"
-        echo "::notice:: ${{steps.build_push.outputs.metadata}}"
-        echo "::notice:: $info"
-        echo "::notice:: $release"
-        echo "::endgroup::"
+        echo "${{ toJSON(steps.build_push.outputs) }}"        
+        regctl image inspect -p linux/amd64 ${{ steps.image_name.outputs.name }}
+        echo "::notice:: Image ${{ steps.meta.outputs.tags }} successfully built and pushed"
+        echo "created=true" >> $GITHUB_OUTPUT
