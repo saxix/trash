@@ -15,10 +15,10 @@ jobs:
       - name: Echo
         run: |
           echo "::group:: "
-          echo "::notice:: github.event_name:                  ${{github.event_name}}"
+          echo "::notice:: github.event_name:                  ${{github.event_name}}" # es. release
           echo "::notice:: github.run_id:                      ${{github.run_id}}"
           echo "::notice:: github.run_number:                  ${{github.run_number}}"
-          echo "::notice:: github.event.action                 ${{github.event.action}}"
+          echo "::notice:: github.event.action                 ${{github.event.action}}"  # es. deleted
           echo "::notice:: github.event.release.draft          ${{github.event.release.draft}}"
           echo "::notice:: github.event.release.prerelease     ${{github.event.release.prerelease}}"
           echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
