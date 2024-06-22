@@ -26,12 +26,15 @@ jobs:
     steps:
       - name: Echo
         run: |
-          echo "::notice:: github.event.run_id:                ${{github.event.run_id}}"
-          echo "::notice:: github.event.run_number:            ${{github.event.run_number}}"
+          echo "::group:: "
+          echo "::notice:: github.event_name:                  ${{github.event_name}}"
+          echo "::notice:: github.run_id:                      ${{github.run_id}}"
+          echo "::notice:: github.run_number:                  ${{github.run_number}}"
           echo "::notice:: github.event.action                 ${{github.event.action}}"
           echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+          echo "::endgroup::"
 
       - name: Dump Env vars
         run: |
