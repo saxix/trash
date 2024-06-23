@@ -13,11 +13,11 @@ jobs:
       - name: Echo
         run: |
           echo "::group:: "
-          echo "::notice:: github.event_name:                  ${{github.event_name}}"
-          echo "::notice:: github.run_id:                      ${{github.run_id}}"
+          echo "::notice:: github.ref:                         ${{github.ref}}"  # tag path
+          echo "::notice:: github.sha:                         ${{github.run_id}}"  # sha
           echo "::notice:: github.run_number:                  ${{github.run_number}}"
-          echo "::notice:: github.event.action                 ${{github.event.action}}"
-          echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
+          echo "::notice:: github.event.master_branch          ${{github.event.master_branch}}"  # source branch
+          echo "::notice:: github.event.ref                    ${{github.event.ref}}"  # tag name
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
           echo "::endgroup::"
