@@ -1,4 +1,4 @@
-name: "[DEBUG] Dump"
+name: "[DEBUG] Tag"
 
 on:
   create:
