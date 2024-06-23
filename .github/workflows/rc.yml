@@ -20,3 +20,10 @@ jobs:
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
           echo "::endgroup::"
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+            echo "====== GITHUB_CONTEXT =============="
+            echo "$GITHUB_CONTEXT"
+            echo "===================================="
