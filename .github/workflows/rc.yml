@@ -1,3 +1,5 @@
+name: "[DEBUG] RC"
+
 on:
   pull_request:
     branches:
