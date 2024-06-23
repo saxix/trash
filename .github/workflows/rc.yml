@@ -1,7 +1,7 @@
 name: "[DEBUG] RC"
 
 on:
-  pull_request:
+  push:
     branches:
       - rc/*
 
