@@ -1,0 +1,46 @@
+name: "Build Distro"
+on:
+  workflow_call:
+    inputs:
+      config-path:
+        required: true
+        type: string
+    secrets:
+      username:
+        required: true
+      password:
+        required: true
+
+
+jobs:
+  build:
+    name: "Build deployable Docker"
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+      version: ${{ steps.build.outputs.version }}
+      created: ${{ steps.build.outputs.created }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.7
+      - id: checksum
+        uses: ./.github/actions/checksum
+      - name: Build
+        id: build
+        uses: ./.github/actions/docker_build
+        with:
+          dryrun: ${{ env.ACT || 'false' }}
+          rebuild: ${{ env.BUILD == 'true'}}
+          image: ${{ vars.DOCKER_IMAGE }}
+          target: 'dist'
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          code_checksum: ${{ contains(github.event.head_commit.message, 'ci:build') && steps.checksum.outputs.checksum || '' }}
+      - shell: bash
+        run: |
+          echo "${{ toJSON(steps.build.outputs) }}"
