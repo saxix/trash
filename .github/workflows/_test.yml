@@ -143,7 +143,7 @@ jobs:
       || contains(github.event.head_commit.message, 'ci:release') 
       || contains(github.event.head_commit.message, 'ci:all')
     name: Build
-    uses: ./.github/workflows/_distro.yml@main
+    uses: ./.github/workflows/_distro.yml
     with:
       config-path: .github/labeler.yml
     secrets:
