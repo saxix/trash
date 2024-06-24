@@ -3,6 +3,7 @@ name: "[DEBUG] RC"
 on:
   push:
     branches:
+      - releases/*
       - rc/*
 
 jobs:
@@ -13,6 +14,8 @@ jobs:
         run: |
           echo "::group:: "
           echo "::notice:: github.event_name:                  ${{github.event_name}}"
+          echo "::notice:: github.ref:                         ${{github.ref}}"
+          echo "::notice:: github.sha:                         ${{github.sha}}"
           echo "::notice:: github.run_id:                      ${{github.run_id}}"
           echo "::notice:: github.run_number:                  ${{github.run_number}}"
           echo "::notice:: github.event.action                 ${{github.event.action}}"
