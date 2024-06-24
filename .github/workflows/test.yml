@@ -75,8 +75,7 @@ jobs:
     name: Build
     uses: ./.github/workflows/_test.yml
     with:
-      config-path: .github/labeler.yml
+      code_checksum: ${{ contains(github.event.head_commit.message, 'ci:build') && needs.changes.outputs.checksum || '' }}
     secrets:
       username: ${{ secrets.DOCKERHUB_USERNAME }}
       password: ${{ secrets.DOCKERHUB_TOKEN }}
-      code_checksum: ${{ contains(github.event.head_commit.message, 'ci:build') && needs.changes.outputs.checksum || '' }}
