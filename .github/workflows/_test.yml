@@ -101,22 +101,22 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
           name: codecov-${{env.GITHUB_REF_NAME}}
-
-  deployable:
-    needs: [changes]
-    if:
-      contains(fromJSON('["refs/heads/develop", "refs/heads/staging", "refs/heads/master", "refs/heads/release"]'), github.ref) 
-      || contains(github.event.head_commit.message, 'ci:release') 
-      || contains(github.event.head_commit.message, 'ci:all')
-    name: Build
-    uses: ./.github/workflows/_distro.yml
-    with:
-      config-path: .github/labeler.yml
-    secrets:
-      username: ${{ secrets.DOCKERHUB_USERNAME }}
-      password: ${{ secrets.DOCKERHUB_TOKEN }}
-      code_checksum: ${{ contains(github.event.head_commit.message, 'ci:build') && needs.changes.outputs.checksum || '' }}
 #
+#  deployable:
+#    needs: [changes]
+#    if:
+#      contains(fromJSON('["refs/heads/develop", "refs/heads/staging", "refs/heads/master", "refs/heads/release"]'), github.ref)
+#      || contains(github.event.head_commit.message, 'ci:release')
+#      || contains(github.event.head_commit.message, 'ci:all')
+#    name: Build
+#    uses: ./.github/workflows/_distro.yml
+#    with:
+#      config-path: .github/labeler.yml
+#    secrets:
+#      username: ${{ secrets.DOCKERHUB_USERNAME }}
+#      password: ${{ secrets.DOCKERHUB_TOKEN }}
+#      code_checksum: ${{ contains(github.event.head_commit.message, 'ci:build') && needs.changes.outputs.checksum || '' }}
+##
 #  trivy:
 #    name: Check Image with Trivy
 #    runs-on: ubuntu-latest
