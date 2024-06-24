@@ -1,21 +1,35 @@
+name: "[DEBUG] Release Candidate"
+
 on:
   pull_request:
+    types: [ opened,closed,reopened,synchronize ]
     branches:
-      - master
+      - 'releases/**'
+      - 'rc/**'
 
 jobs:
   my-action:
-    if: ${{ github.event.pull_request.merged }}
     runs-on: self-hosted
     steps:
       - name: Echo
         run: |
           echo "::group:: "
           echo "::notice:: github.event_name:                  ${{github.event_name}}"
+          echo "::notice:: github.ref:                         ${{github.ref}}"
+          echo "::notice:: github.sha:                         ${{github.sha}}"
           echo "::notice:: github.run_id:                      ${{github.run_id}}"
           echo "::notice:: github.run_number:                  ${{github.run_number}}"
+          echo "::notice:: github.actor:                       ${{github.actor}}"
           echo "::notice:: github.event.action                 ${{github.event.action}}"
+          
           echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
           echo "::endgroup::"
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+          echo "====== GITHUB_CONTEXT =============="
+          echo "$GITHUB_CONTEXT"
+          echo "===================================="
