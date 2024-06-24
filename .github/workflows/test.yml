@@ -69,7 +69,7 @@ jobs:
   Test:
     needs: [changes]
     if:
-      changes.outputs.run_tests 
+      needs.changes.outputs.run_tests 
       || contains(github.event.head_commit.message, 'ci:release') 
       || contains(github.event.head_commit.message, 'ci:all')
     name: Build
