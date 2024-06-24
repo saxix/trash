@@ -10,6 +10,7 @@ on:
       - master
       - staging
       - release/*
+      - rc/*
       - feature/*
       - bugfix/*
       - hotfix/*
