@@ -6,7 +6,11 @@ on:
       code_checksum:
         required: true
         type: string
-
+    secrets:
+      username:
+        required: true
+      password:
+        required: true
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
