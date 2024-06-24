@@ -1,0 +1,125 @@
+name: "[DEBUG] Dump"
+
+on:
+  check_run:
+  create:
+  delete:
+  discussion:
+  discussion_comment:
+  fork:
+  issues:
+  issue_comment:
+  milestone:
+  pull_request:
+  pull_request_review_comment:
+  pull_request_review:
+  push:
+  release:
+  workflow_dispatch:
+
+
+jobs:
+  dump:
+    name: "[DEBUG] Echo Full Context"
+    runs-on: self-hosted
+    steps:
+      - name: Echo
+        run: |
+          is_hotfix="${{contains(github.event.pull_request.head.ref, 'hotfix/')}}"
+          is_rc="${{contains(github.event.pull_request.head.ref, 'rc/')}}"          
+          target_branch="${{github.event.pull_request.base.ref}}"
+          message="${{github.event.head_commit.message}}"
+
+          echo "::group:: "
+          echo "::notice:: github.event_name:                  ${{github.event_name}}" # es. release
+          echo "::notice:: github.run_id:                      ${{github.run_id}}"
+          echo "::notice:: github.run_number:                  ${{github.run_number}}"
+          echo "::notice:: github.event.action                 ${{github.event.action}}"  # es. deleted
+          echo "::notice:: github.event.release.draft          ${{github.event.release.draft}}"
+          echo "::notice:: github.event.release.prerelease     ${{github.event.release.prerelease}}"
+          echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
+          echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
+          echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+          echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
+          echo "::notice:: github.event.pull_request.title     ${{github.event.pull_request.title}}"
+
+          echo "::notice:: is_hotfix     ${is_hotfix}"
+          echo "::notice:: is_rc         ${is_rc}"
+          echo "::notice:: target_branch ${target_branch}"
+          echo "::notice:: message       ${message}"
+
+
+          if [[ $target_branch == master && $is_hotfix == true ]]; then
+              TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
+              echo "::warning:: HOTFIX - Create TAG"
+          elif [[ $target_branch == master && $is_rc == true ]]; then
+              TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
+              echo "::warning:: RELEASE  - Create TAG"
+          elif [[ $target_branch == develop ]]; then
+              echo "::warning:: FEATURE  - Do NOT create TAG"
+          else
+              echo "::warning:: UNKNOWN target $target_branch - Do NOT create TAG"
+          fi            
+          echo "::notice:: TAG       ${TAG}"
+          echo "::endgroup::"
+      - name: Dump Env vars
+        run: |
+            echo "====== ENVIRONMENT ================="
+            env | sort
+            echo "===================================="
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+            echo "====== GITHUB_CONTEXT =============="
+            echo "$GITHUB_CONTEXT"
+            echo "===================================="
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJSON(job) }}
+        run: |
+          echo "====== JOB_CONTEXT =============="
+          echo "$JOB_CONTEXT"
+          echo "===================================="
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJSON(steps) }}
+        run: |
+          echo "====== STEPS_CONTEXT =============="
+          echo "$STEPS_CONTEXT"
+          echo "===================================="
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+        run: |
+          echo "====== RUNNER_CONTEXT =============="
+          echo "$RUNNER_CONTEXT"
+          echo "===================================="
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
+        run: |
+          echo "====== STRATEGY_CONTEXT =============="
+          echo "$STRATEGY_CONTEXT"
+          echo "===================================="
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+        run: |
+          echo "====== MATRIX_CONTEXT =============="
+          echo "$MATRIX_CONTEXT"
+          echo "===================================="
+      - name: Dump vars context
+        env:
+          VARS_CONTEXT: ${{ toJSON(vars) }}
+        run: |
+          echo "====== VARS =============="
+          echo "$VARS_CONTEXT"
+          echo "===================================="
+      - name: Dump env context
+        env:
+          ENV_CONTEXT: ${{ toJSON(env) }}
+        run: |
+          echo "====== ENV =============="
+          echo "$ENV_CONTEXT"
+          echo "===================================="
