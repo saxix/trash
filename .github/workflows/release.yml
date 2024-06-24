@@ -13,6 +13,11 @@ jobs:
     steps:
       - name: Echo
         run: |
+          is_hotfix="${{contains(github.event.pull_request.head.ref, 'hotfix/')}}"
+          is_rc="${{contains(github.event.pull_request.head.ref, 'rc/')}}"          
+          target_branch="${{github.event.pull_request.base.ref}}"
+          message="${{github.event.head_commit.message}}"
+
           echo "::group:: "
           echo "::notice:: github.event_name:                  ${{github.event_name}}"
           echo "::notice:: github.ref:                         ${{github.ref}}"
@@ -25,7 +30,19 @@ jobs:
           echo "::notice:: github.event.pull_request.base.ref  ${{github.event.pull_request.base.ref}}"
           echo "::notice:: github.event.pull_request.head.ref  ${{github.event.pull_request.head.ref}}"
           echo "::notice:: github.event.pull_request.html_url  ${{github.event.pull_request.html_url}}"
-          echo "::endgroup::"
+
+          if [[ $target_branch == master && $is_hotfix == true ]]; then
+              TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
+              echo "::warning:: HOTFIX - Create TAG"
+          elif [[ $target_branch == master && $is_rc == true ]]; then
+              TAG=$(echo "$message" | sed -r 's/.*ci:tag=([0-9a-z.-]*).*/\1/')
+              echo "::warning:: RELEASE  - Create TAG"
+          elif [[ $target_branch == develop ]]; then
+              echo "::warning:: FEATURE  - Do NOT create TAG"
+          else
+              echo "::warning:: UNKNOWN target $target_branch - Do NOT create TAG"
+          fi            
+          echo "::notice:: TAG             echo "::endgroup::"
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
@@ -33,3 +50,15 @@ jobs:
           echo "====== GITHUB_CONTEXT =============="
           echo "$GITHUB_CONTEXT"
           echo "===================================="
+#      - uses: actions/checkout@v4
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+#        with:
+#          tag_name: ${{ env.TAG }}
+#          release_name: Release ${{ github.ref }}
+##          body:
+#          draft: true
+#          prerelease: true

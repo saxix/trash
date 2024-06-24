@@ -1,26 +1,13 @@
-name: "[DEBUG] Dump"
+name: "[DEBUG] PR"
 
 on:
-  check_run:
-  create:
-  delete:
-  discussion:
-  discussion_comment:
-  fork:
-  issues:
-  issue_comment:
-  milestone:
   pull_request:
-  pull_request_review_comment:
-  pull_request_review:
-  push:
-  release:
-  workflow_dispatch:
 
 
 jobs:
   dump:
     name: "[DEBUG] Echo Full Context"
+    if: contains(github.event.pull_request.head.ref, 'hotfix/')
     runs-on: self-hosted
     steps:
       - name: Echo
