@@ -7,10 +7,12 @@ on:
         required: true
         type: string
     secrets:
-      username:
+      DOCKERHUB_USERNAME:
         required: true
-      password:
+      DOCKERHUB_TOKEN:
         required: true
+      CODECOV_TOKEN:
+        required: false
 
 #concurrency:
 #  group: "${{ github.workflow }}-${{ github.ref }}"
@@ -93,6 +95,7 @@ jobs:
             -t ${{needs.build.outputs.image}} \
             pytest tests -v --create-db -v --maxfail=10
       - name: Upload coverage to Codecov
+        if: secrets.CODECOV_TOKEN
         uses: codecov/codecov-action@v4
         with:
           env_vars: OS,PYTHON
