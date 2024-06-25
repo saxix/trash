@@ -111,7 +111,7 @@ runs:
           echo "name=${{ inputs.image }}:${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
           echo "test_name=${{ inputs.image }}:test-${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
     - name: "Check Image"
-      id: image_status//
+      id: image_status
       shell: bash
       run: | 
         set +e
