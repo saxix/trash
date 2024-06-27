@@ -82,6 +82,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - run: echo "::notice:: Run test using ${{needs.build.outputs.image}}"
       - name: Run tests
         run: |
           docker run --rm \
